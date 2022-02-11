@@ -22,14 +22,14 @@
 using namespace std;
 
 // Globals.
-static float r = 1.0; // Radius of head.
-static int nv = 10;  //Number of vertices for head.
-static float cx = 20.0, cy = 15.0, cz = -1.0;  //Center of head.
-static float bodylength = 4.0;
+
+
 bool isOrtho = true;
+
 float mountainz = -18.0; 
 float starz = -19.0;
 float snowpeakz = -17.0;
+
 static float mountainVerts[] =
 {
     0.0, 30.0, mountainz,
@@ -56,13 +56,39 @@ static float mountainVerts[] =
     100.0, 0.0, mountainz
 };
 
+static float mountainColors[]
+{
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
+    .5, .5, .5,
+    .2, .2, .2,
 
-void drawHead()
+};
+
+
+void drawHead(float cx, float cy, float cz, float r, float nv)
 {
     int j;
     //draw circle head with nv vertices, center (cx,cy,xz)
     glBegin(GL_TRIANGLE_FAN);
-    glColor3f(0.0, 0.0, 1.0);
     glVertex3f(cx, cy, cz);
     for (j = 0; j <= nv; j++)
     {
@@ -75,27 +101,23 @@ void drawHead()
 
 }
 
-void drawStickBody()
+void drawStickBody(float cx, float cy, float cz, float r, float bodylength)
 {
     //draw line for body, starting at bottom of head,
       //of length bodylength
     glLineWidth(5.0);
-    glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(cx, cy - r, cz);
     glVertex3f(cx, cy - r - bodylength, cz);
     glEnd();
     glLineWidth(1.0);  //restore width and color
-    glColor3f(0.0, 0.0, 0.0);
-
 }
 
-void drawStickArms()
+void drawStickArms(float cx, float cy, float cz, float r, float bodylength)
 {
     //draw 2 arms, attached partly down body, going down,
     //at slight angle.
     glLineWidth(5.0);
-    glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(cx, cy - r - .2 * bodylength, cz); //down 20% of body
     glVertex3f(cx - 1, cy - r - 1.2 * bodylength, cz);
@@ -103,15 +125,14 @@ void drawStickArms()
     glVertex3f(cx + 1, cy - r - 1.2 * bodylength, cz);
     glEnd();
     glLineWidth(1.0);  //restore width and color
-    glColor3f(0.0, 0.0, 0.0);
+    
 }
 
-void drawStickLegs()
+void drawStickLegs(float cx, float cy, float cz, float r, float bodylength)
 {
     //draw 2 legs, attached at bottom of body, going out
     //at slight angle,
     glLineWidth(5.0);
-    glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
     glVertex3f(cx, cy - r - bodylength, cz); //down at bottom of body
     glVertex3f(cx - 1, cy - r - bodylength - 6, cz);
@@ -119,7 +140,7 @@ void drawStickLegs()
     glVertex3f(cx + 1, cy - r - bodylength - 6, cz);
     glEnd();
     glLineWidth(1.0);  //restore width and color
-    glColor3f(0.0, 0.0, 0.0);
+   
 }
 
 void drawMountains()
@@ -199,31 +220,39 @@ void printInteraction()
     cout << "TEST" << endl;
 }
 
-void drawCylinder() {
-    int q = 10;
-    glColor3f(1, 1, 1);
-    for (int j = 0; j < q; j++)
+void drawCircle(float Y) 
+{
+    float numVerts = 500;
+    float R = 3;
+    float Z = -10;
+    float X = 25;
+    float t = 0;
+    glBegin(GL_LINE_LOOP);
+    for (int i = 0; i < numVerts; i++)
     {
-        int R = 5;
-        int p = 10;
-        // One latitudinal triangle strip.
-        glBegin(GL_TRIANGLE_STRIP);
-        for (int i = 0; i <= p; i++)
-        {
-            glVertex3f(R * cos((float)(j + 1) / q * PI / 2.0) *
-                cos(2.0 * (float)i / p * PI),
-                R * sin((float)(j + 1) / q * PI / 2.0),
-                -R * cos((float)(j + 1) / q * PI / 2.0) *
-                sin(2.0 * (float)i / p * PI));
-            glVertex3f(R * cos((float)j / q * PI / 2.0) *
-                cos(2.0 * (float)i / p * PI),
-                R * sin((float)j / q * PI / 2.0),
-                -R * cos((float)j / q * PI / 2.0) *
-                sin(2.0 * (float)i / p * PI));
-        }
+        glVertex3f(X + R * sin(t), Y, Z + R * cos(t));
+        t += 2 * PI / numVerts;
     }
+    glEnd();
 }
 
+void drawCylinder() 
+{
+    for (int i = 5; i < 30; i++) {
+        drawCircle(i);
+      
+    }
+   
+   
+}
+
+void drawPerson(float cx, float cy, float cz, float r, float bodylength, float nv) 
+{
+    drawHead(cx, cy, cz, r, nv );
+    drawStickArms(cx, cy, cz, r, bodylength);
+    drawStickBody(cx, cy, cz, r, bodylength);
+    drawStickLegs(cx, cy, cz, r, bodylength);
+}
 
 // Drawing routine.
 void drawScene(void)
@@ -235,38 +264,40 @@ void drawScene(void)
 
     if (isOrtho) {
         glOrtho(0, 100, 0, 100, -1, 20);
+        glClearColor(.125, .165, .271, -20.0);
+        drawStars();
+        drawMountains();
+        drawSnowPeaks();
+        glColor3f(0, 0, 1);
+        drawPerson(50, 30, -1, 1, 4, 10);
+        glColor3f(1, .5, 0);
+        drawPerson(30, 60, -18.1, 1, 6, 10);
+        
     }
     else {
         cout << "Frust set" << endl;
-        drawCylinder();
         glFrustum(0, 5, 0, 5, 1, 20);
+        glClearColor(0, 0, 0, -20);
+        glColor3f(1, 1, 1);
+        drawCylinder();
+      
     }
-    drawStars();
-    drawMountains();
-    drawSnowPeaks();
-    drawHead();
-    drawStickArms();
-    drawStickBody();
-    drawStickLegs();
-    
-
-    
-
+   
     printInteraction();
-    
-
     glutSwapBuffers(); //instead of glFlush, double buffer
 }
 
 // Initialization routine.
 void setup(void)
 {
-    glClearColor(.125, .165, .271, -20.0);
+    
 
     // Enable vertex arrays
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
 
     glVertexPointer(3, GL_FLOAT, 0, mountainVerts);
+    glColorPointer(3, GL_FLOAT, 0, mountainColors);
 
    
 }
