@@ -1,11 +1,19 @@
-///////////////////////////////////////////////////////////////////////////////////////          
-// simplePerson.cpp
-// Author:  Baruch
-//
-// This program draws a person.
-//
-// 
-/////////////////////////////////////////////////////////////////////////////////////// 
+/***********************************************************
+*
+* Name: Nolan Willis
+*
+* Email: nwillis@syr.edu    
+*
+* Assignment: Assignment 1
+* 
+* Environment: Visual Studio Community 2022
+* 
+* Date submitted: February 13, 2022
+* 
+* References: simplePerson.cpp from class and 
+* Computer Graphics Through OpenGL, 3rd Edition, Sumanta Guha
+*
+************************************************************/
 
 #include <cmath>
   //sin, cos
@@ -23,13 +31,15 @@ using namespace std;
 
 // Globals.
 
-
+// Bool value to keep track of view mode (ortho or frust)
 bool isOrtho = true;
 
+// Z-values for the mountains, stars, and snow peaks
 float mountainz = -18.0; 
 float starz = -19.0;
 float snowpeakz = -17.0;
 
+// Color and vertex arrays for the mountains
 static float mountainVerts[] =
 {
     0.0, 30.0, mountainz,
@@ -55,7 +65,6 @@ static float mountainVerts[] =
     100.0, 50.0, mountainz,
     100.0, 0.0, mountainz
 };
-
 static float mountainColors[]
 {
     .5, .5, .5,
@@ -101,6 +110,7 @@ void drawHead(float cx, float cy, float cz, float r, float nv)
 
 }
 
+
 void drawStickBody(float cx, float cy, float cz, float r, float bodylength)
 {
     //draw line for body, starting at bottom of head,
@@ -112,6 +122,7 @@ void drawStickBody(float cx, float cy, float cz, float r, float bodylength)
     glEnd();
     glLineWidth(1.0);  //restore width and color
 }
+
 
 void drawStickArms(float cx, float cy, float cz, float r, float bodylength)
 {
@@ -128,6 +139,7 @@ void drawStickArms(float cx, float cy, float cz, float r, float bodylength)
     
 }
 
+
 void drawStickLegs(float cx, float cy, float cz, float r, float bodylength)
 {
     //draw 2 legs, attached at bottom of body, going out
@@ -143,6 +155,8 @@ void drawStickLegs(float cx, float cy, float cz, float r, float bodylength)
    
 }
 
+
+// Draws mountains using a triangle strip
 void drawMountains()
 {
     glColor3f(.2, .2, .2);
@@ -152,9 +166,10 @@ void drawMountains()
     glFlush();
 }
 
+
+// Draws snow peaks using triangle fans
 void drawSnowPeaks()
 {
-    // Snow Peaks
     // Peak 0
     glColor3f(1.0, 1.0, 1.0);
     glBegin(GL_TRIANGLE_FAN);
@@ -187,6 +202,8 @@ void drawSnowPeaks()
     glEnd();
 }
 
+
+// Draws stars behind the mountains
 void drawStars() 
 {
     // Ursa Major
@@ -212,20 +229,23 @@ void drawStars()
         glVertex3f(x, y, starz);
     }
     glEnd();
-    
 }
 
+
+// Prints instructions to terminal
 void printInteraction()
 {
-    cout << "TEST" << endl;
+    cout << "\nPress v to change view mode" << endl;
 }
 
+
+// Draws a circle in the z,x plane
 void drawCircle(float Y) 
 {
     float numVerts = 500;
     float R = 3;
     float Z = -10;
-    float X = 25;
+    float X = 50;
     float t = 0;
     glBegin(GL_LINE_LOOP);
     for (int i = 0; i < numVerts; i++)
@@ -236,16 +256,18 @@ void drawCircle(float Y)
     glEnd();
 }
 
+
+// Stacks multiple circles on top of each other
 void drawCylinder() 
 {
     for (int i = 5; i < 30; i++) {
         drawCircle(i);
       
     }
-   
-   
 }
 
+
+// Draws all the parts of person, so multiple people can be drawn easily
 void drawPerson(float cx, float cy, float cz, float r, float bodylength, float nv) 
 {
     drawHead(cx, cy, cz, r, nv );
@@ -253,6 +275,156 @@ void drawPerson(float cx, float cy, float cz, float r, float bodylength, float n
     drawStickBody(cx, cy, cz, r, bodylength);
     drawStickLegs(cx, cy, cz, r, bodylength);
 }
+
+
+// Draws a polar bear, lets you scale the bear's size and move it in x,y,z directions
+void drawVertexBear(float scale, float x, float y, float z) {
+    glColor3f(1, 1, 1);
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(1 * scale + x, .5 * scale + y, z);
+    glVertex3f(1.1 * scale + x, 0 + y, z);
+    glVertex3f(2 * scale + x, 0 + y, z);
+    glVertex3f(2.25 * scale + x, .75 * scale + y, z);
+    glVertex3f(2.5 * scale + x, 1.5 * scale + y, z);
+    glVertex3f(3 * scale + x, 0 + y, z);
+    glVertex3f(4 * scale + x , 0 + y, z);
+    glVertex3f(4 * scale + x, 1.5 * scale + y, z);
+    glVertex3f(4.5 * scale + x, 1 * scale + y, z);
+    glVertex3f(4.5 * scale + x, 0 + y, z);
+    glVertex3f(5.5 * scale + x, 0 + y, z);
+    glVertex3f(5.5 * scale + x, 1 * scale + y, z);
+    glVertex3f(6 * scale + x, 1.5 * scale + y, z);
+    glVertex3f(6 * scale + x, 0 + y, z);
+    glVertex3f(7 * scale + x, 0 + y, z);
+    glVertex3f(7 * scale + x, 2 * scale + y, z);
+    glVertex3f(9 * scale + x, 2.5 * scale + y, z);
+    glVertex3f(10 * scale + x, 3 * scale + y, z);
+    glVertex3f(9 * scale + x, 4 * scale + y, z);
+    glVertex3f(8 * scale + x, 4 * scale + y, z);
+    glVertex3f(5 * scale + x, 5 * scale + y, z);
+    glVertex3f(2 * scale + x, 4 * scale + y, z);
+    glVertex3f(1 * scale + x, 3 * scale + y, z);
+    glVertex3f(1.5 * scale + x, 1.5 * scale + y, z);
+    glVertex3f(1 * scale + x, .5 * scale + y, z);
+    glEnd();
+}
+
+
+void drawSpeechBubble(float scale, float x, float y, float z) {
+    glColor3f(1, 1, 1);
+    glPolygonMode(GL_FRONT, GL_FILL);
+    glBegin(GL_POLYGON);
+        glVertex3f(1.0 * scale + x, 4.0 * scale + y, z);
+        glVertex3f(1.0 * scale + x, 2.0 * scale + y, z);
+        glVertex3f(3.0 * scale + x, 2.0 * scale + y, z);
+        glVertex3f(3.5 * scale + x, 0.0 * scale + y, z);
+       /* glVertex3f(4.0 * scale + x, 0.0 * scale + y, z);*/
+        glVertex3f(4.0 * scale + x, 2.0 * scale + y, z);
+        glVertex3f(6.0 * scale + x, 2.0 * scale + y, z);
+        glVertex3f(6.0 * scale + x, 4.0 * scale + y, z);
+        glVertex3f(1.0 * scale + x, 4.0 * scale + y, z);
+    glEnd();
+}
+
+
+void drawSign(float scale, float x, float y, float z) {
+    glColor3f(79.0 / 255.0, 53.0 / 255.0, 36.0 / 255.0);
+    glPolygonMode(GL_FRONT, GL_FILL);
+
+    // Sign face
+    glBegin(GL_POLYGON);
+    glVertex3f(1.0 * scale + x, 4.0 * scale + y, z);
+    glVertex3f(1.0 * scale + x, 2.0 * scale + y, z);
+    glVertex3f(6.0 * scale + x, 2.0 * scale + y, z);
+    glVertex3f(6.0 * scale + x, 4.0 * scale + y, z);
+    glVertex3f(1.0 * scale + x, 4.0 * scale + y, z);
+    glEnd();
+
+    // Sign post
+    glBegin(GL_POLYGON);
+    glVertex3f(3.25 * scale + x, 2.0 * scale + y, z);
+    glVertex3f(3.25 * scale + x, 0.0 * scale + y, z);
+    glVertex3f(3.75 * scale + x, 0.0 * scale + y, z);
+    glVertex3f(3.75 * scale + x, 2.0 * scale + y, z);
+    glEnd();
+}
+
+
+// Draws text
+void writeBitmapString(void* font, char* string)
+{
+    char* c;
+    for (c = string; *c != '\0'; c++) glutBitmapCharacter(font, *c);
+}
+
+
+// Draws text boxes
+void drawTextBoxes() 
+{
+    drawSpeechBubble(2, 41, 30, -14);
+    glColor3f(0, 0, 0);
+    glRasterPos3f(45, 35, -13);
+    char bluepersonmessage[] = "Oh no...";
+    writeBitmapString(GLUT_BITMAP_HELVETICA_18, bluepersonmessage);
+
+    drawSpeechBubble(2, 21, 60, -14);
+    glColor3f(0, 0, 0);
+    glRasterPos3f(23, 65.5, -13);
+    char orangepersonmessage[] = "VERTEX BEARS!";
+    writeBitmapString(GLUT_BITMAP_HELVETICA_12, orangepersonmessage);
+
+    glColor3f(1, 1, 1);
+    glRasterPos3f(73.4, 22, -13);
+    char signmessage[] = "Beware of vertex bears";
+    writeBitmapString(GLUT_BITMAP_HELVETICA_10, signmessage);
+
+    drawSign(2.5, 70, 15, -14);
+}
+
+void drawTwoSidedBox()
+{
+    // Back
+    glColor3f(.1, .1, .1);
+    glBegin(GL_POLYGON);
+    glVertex3f(4, 50, -19);
+    glVertex3f(34, 50, -19);
+    glVertex3f(34, 20, -19);
+    glVertex3f(4, 20, -19);
+    glEnd();
+
+    // Front
+    glColor3f(1, 0, 0);
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-5, 35, -10);
+    glVertex3f(25, 35, -10);
+    glVertex3f(25, 5, -10);
+    glVertex3f(-5, 5, -10);
+    glEnd();
+
+    // Top
+    glColor3f(0, 1, 0);
+    glBegin(GL_POLYGON);
+    glVertex3f(-5, 35, -10);
+    glColor3f(.1, .1, .1);
+    glVertex3f(4, 50, -19);
+    glVertex3f(34, 50, -19);
+    glColor3f(0, 1, 0);
+    glVertex3f(25, 35, -10);
+    glEnd();
+
+    // Bottom
+    glColor3f(0, 0, 1);
+    glBegin(GL_POLYGON);
+    glVertex3f(-5, 5, -10);
+    glColor3f(.1, .1, .1);
+    glVertex3f(4, 20, -19);
+    glVertex3f(34, 20, -19);
+    glColor3f(0, 0, 1);
+    glVertex3f(25, 5, -10);
+    glEnd();
+}
+
+
 
 // Drawing routine.
 void drawScene(void)
@@ -263,6 +435,7 @@ void drawScene(void)
     glLoadIdentity();
 
     if (isOrtho) {
+        cout << "Orthographic view set" << endl;
         glOrtho(0, 100, 0, 100, -1, 20);
         glClearColor(.125, .165, .271, -20.0);
         drawStars();
@@ -272,35 +445,38 @@ void drawScene(void)
         drawPerson(50, 30, -1, 1, 4, 10);
         glColor3f(1, .5, 0);
         drawPerson(30, 60, -18.1, 1, 6, 10);
+        drawVertexBear(3, 2, 10, -15);
+        drawVertexBear(1, 2, 5, -14);
+        drawVertexBear(1, 23, 10, -13);
+        drawTextBoxes();
         
     }
     else {
-        cout << "Frust set" << endl;
-        glFrustum(0, 5, 0, 5, 1, 20);
+        cout << "Frustrum view set \n" << endl;
+        glFrustum(-10, 10, -10, 10, 1, 20);
         glClearColor(0, 0, 0, -20);
         glColor3f(1, 1, 1);
         drawCylinder();
-      
+        drawTwoSidedBox();
     }
    
     printInteraction();
     glutSwapBuffers(); //instead of glFlush, double buffer
 }
 
+
 // Initialization routine.
 void setup(void)
 {
-    
-
-    // Enable vertex arrays
+    // Enable vertex/color arrays
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
+    // Define vertex/color array pointers
     glVertexPointer(3, GL_FLOAT, 0, mountainVerts);
     glColorPointer(3, GL_FLOAT, 0, mountainColors);
-
-   
 }
+
 
 // OpenGL window reshape routine.
 void resize(int w, int h)
@@ -312,6 +488,7 @@ void resize(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
+
 // Keyboard input processing routine.
 void keyInput(unsigned char key, int x, int y)
 {
@@ -320,22 +497,19 @@ void keyInput(unsigned char key, int x, int y)
     case 27:
         exit(0);
         break;
+    // Changes from ortho to frust when user clicks 'v'
     case 'v':
         isOrtho = !isOrtho;
-        glFlush();
         glutPostRedisplay();
-
     default:
         break;
     }
 }
 
 
-
 // Main routine.
 int main(int argc, char** argv)
 {
-
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(1000, 1000);
