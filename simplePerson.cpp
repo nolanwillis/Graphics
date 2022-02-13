@@ -12,6 +12,8 @@
 * 
 * References: simplePerson.cpp from class and 
 * Computer Graphics Through OpenGL, 3rd Edition, Sumanta Guha
+* 
+* Interactions: press v to switch view mode
 *
 ************************************************************/
 
@@ -232,14 +234,14 @@ void drawStars()
 }
 
 
-// Prints instructions to terminal
+// Prints instructions to the terminal
 void printInteraction()
 {
     cout << "\nPress v to change view mode" << endl;
 }
 
 
-// Draws a circle in the z,x plane
+// Draws a circle in the xz plane
 void drawCircle(float Y) 
 {
     float numVerts = 500;
@@ -318,7 +320,6 @@ void drawSpeechBubble(float scale, float x, float y, float z) {
         glVertex3f(1.0 * scale + x, 2.0 * scale + y, z);
         glVertex3f(3.0 * scale + x, 2.0 * scale + y, z);
         glVertex3f(3.5 * scale + x, 0.0 * scale + y, z);
-       /* glVertex3f(4.0 * scale + x, 0.0 * scale + y, z);*/
         glVertex3f(4.0 * scale + x, 2.0 * scale + y, z);
         glVertex3f(6.0 * scale + x, 2.0 * scale + y, z);
         glVertex3f(6.0 * scale + x, 4.0 * scale + y, z);
