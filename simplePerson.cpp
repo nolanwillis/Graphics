@@ -359,7 +359,7 @@ void writeBitmapString(void* font, char* string)
 }
 
 
-// Draws text boxes
+// Draws speech bubbles and sign with text
 void drawTextBoxes() 
 {
     drawSpeechBubble(2, 41, 30, -14);
