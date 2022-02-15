@@ -311,7 +311,7 @@ void drawVertexBear(float scale, float x, float y, float z) {
     glEnd();
 }
 
-
+// Defines a speech bubble
 void drawSpeechBubble(float scale, float x, float y, float z) {
     glColor3f(1, 1, 1);
     glPolygonMode(GL_FRONT, GL_FILL);
@@ -328,6 +328,7 @@ void drawSpeechBubble(float scale, float x, float y, float z) {
 }
 
 
+// Defines a brown sign
 void drawSign(float scale, float x, float y, float z) {
     glColor3f(79.0 / 255.0, 53.0 / 255.0, 36.0 / 255.0);
     glPolygonMode(GL_FRONT, GL_FILL);
@@ -351,7 +352,7 @@ void drawSign(float scale, float x, float y, float z) {
 }
 
 
-// Draws text
+// For writting text
 void writeBitmapString(void* font, char* string)
 {
     char* c;
@@ -382,6 +383,8 @@ void drawTextBoxes()
     drawSign(2.5, 70, 15, -14);
 }
 
+
+// Draws two-sided box/doorway
 void drawTwoSidedBox()
 {
     // Back
@@ -427,7 +430,7 @@ void drawTwoSidedBox()
 
 
 
-// Drawing routine.
+// Drawing routine
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
