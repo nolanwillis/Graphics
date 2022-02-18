@@ -22,6 +22,7 @@
     <ClCompile Include="circleandmore.cpp" />
     <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="simplePerson.cpp" />
+    <ClCompile Include="spaceGUI.cpp" />
     <ClCompile Include="square.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
