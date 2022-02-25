@@ -160,7 +160,7 @@
 //
 //// Draws mountains using a triangle strip
 //void drawMountains()
-//{
+//{ 
 //    glColor3f(.2, .2, .2);
 //    glBegin(GL_TRIANGLE_STRIP);
 //        for (int i = 0; i < 22; i++) glArrayElement(i);
