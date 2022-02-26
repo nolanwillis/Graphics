@@ -24,6 +24,7 @@
     <ClCompile Include="simplePerson.cpp" />
     <ClCompile Include="spaceGUI.cpp" />
     <ClCompile Include="square.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

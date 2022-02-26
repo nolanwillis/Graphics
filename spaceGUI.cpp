@@ -31,30 +31,28 @@
 using namespace std;
 
 // Globals
-
 // Window identifiers
 int menuWindow;
 int skyWindow;
-
 // Check boxes pressed status
 bool CB1Pressed = false;
 bool CB2Pressed = false;
 bool CB3Pressed = false;
 bool CB4Pressed = false;
-
 // Boolean value that determines background color 
 bool isDusk = true;
-
 // Radio button pressed status
 int rbValue = 1;
-
 // Z value for Ursa Major
 int ursaMajorZ = -12;
-
 // Z value for the background stars
 int backgroundStarsZ = -18;
-
-
+// Rotation angle for the moon
+int moonRotAngle = 90;
+// Rotation angle for the entire sky scene
+int skyRot = 0;
+// Scale value for the moon
+int moonScale = 1;
 // For writting text
 void writeBitmapString(void* font, char* string)
 {
@@ -63,7 +61,10 @@ void writeBitmapString(void* font, char* string)
 }
 
 
-// Functions called in drawMenu()
+
+
+// Functions that draw menu objects
+// Draws a circle
 void drawCircle(float R, float X, float Y) 
 {
     glLineWidth(1);
@@ -78,8 +79,8 @@ void drawCircle(float R, float X, float Y)
     }
     glEnd();
 }
-
-void drawBox(float X, float Y) 
+// Draws a square
+void drawSquare(float X, float Y) 
 {
     glLineWidth(2);
     glBegin(GL_LINE_LOOP);
@@ -89,7 +90,7 @@ void drawBox(float X, float Y)
     glVertex3f(30 + X, 30 + Y, -17);
     glEnd();
 }
-
+// Draws the red/pink menu background
 void drawMenuBox() 
 {
     glColor3f(219.0 / 255.0, 80.0 / 255.0, 74.0 / 255.0);
@@ -100,12 +101,15 @@ void drawMenuBox()
     glVertex3f(170, 165, -18);
     glEnd();
 }
-
+// Draws the radio buttons
 void drawRadioButtons() 
 {
+    // Radio button 1 (top most)
     if (rbValue == 1) 
     {
         glColor3f(.4, .4, .4);
+        // New moon angle
+        moonRotAngle = 90;
     }
     else 
     {
@@ -113,9 +117,12 @@ void drawRadioButtons()
     }
     drawCircle(5.0, 105.0, 120.0);
 
+    // Radio button 2
     if (rbValue == 2) 
     {
         glColor3f(.4, .4, .4);
+        // Crescent moon angle
+        moonRotAngle = 28;
     }
     else 
     {
@@ -123,9 +130,12 @@ void drawRadioButtons()
     }
     drawCircle(5.0, 105.0, 100.0);
 
+    // Radio button 3
     if (rbValue == 3) 
     {
         glColor3f(.4, .4, .4);
+        // Half moon angle
+        moonRotAngle = 0;
     }
     else 
     {
@@ -133,9 +143,18 @@ void drawRadioButtons()
     }
     drawCircle(5.0, 105.0, 80.0);
 
+    // Radio button 4
     if (rbValue == 4) 
     {
         glColor3f(.4, .4, .4);
+        // Gibbous moon angle, changes base on moon size
+        if (moonScale == 1) {
+            moonRotAngle = -40;
+        }
+        else
+        {
+            moonRotAngle = -25;
+        }
     }
     else 
     {
@@ -143,9 +162,12 @@ void drawRadioButtons()
     }
     drawCircle(5.0, 105.0, 60.0);
 
+    // Radio button 5
     if (rbValue == 5) 
     {
         glColor3f(.4, .4, .4);
+        // Full moon angle
+        moonRotAngle = -90;
     }
     else 
     {
@@ -153,14 +175,14 @@ void drawRadioButtons()
     }
     drawCircle(5.0, 105.0, 40.0);
 }
-
+// Draws the checkboxes and x's
 void drawCheckBoxes() 
 {
     glColor3f(1, 1, 1);
-    drawBox(5, 95);
-    drawBox(5, 75);
-    drawBox(5, 55);
-    drawBox(5, 35);
+    drawSquare(5, 95);
+    drawSquare(5, 75);
+    drawSquare(5, 55);
+    drawSquare(5, 35);
 
     if (CB1Pressed) 
     {
@@ -207,7 +229,7 @@ void drawCheckBoxes()
         glEnd();
     }
 }
-
+// Draws all the text in the menu
 void drawText() 
 {
     // Stellar objects title
@@ -262,9 +284,12 @@ void drawText()
     char fullMoon[] = "Full";
     writeBitmapString(GLUT_BITMAP_HELVETICA_18, fullMoon);
 }
+// End of functions that draw menu objects
 
 
-// Functions called in drawSky()
+
+
+// Start of functions that draw sky objects
 void drawUrsaMajor()
 {
     glColor3f(1.0, 1.0, 1.0);
@@ -282,7 +307,7 @@ void drawUrsaMajor()
     glPopMatrix();
     glEnd();
 }
-
+// Draws the stars in the background
 void drawBackgroundStars()
 {
     glColor3f(1, 1, 1);
@@ -295,7 +320,7 @@ void drawBackgroundStars()
     }
     glEnd();
 }
-
+// Draws the comet
 void drawComet()
 {
     // Blue-purple sphere
@@ -321,12 +346,13 @@ void drawComet()
     glutWireCone(1, 5, 50, 50);
     glPopMatrix();
 }
-
+// Draws the space station
 void drawSpaceStation()
 {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     glPushMatrix();
     glTranslatef(-25, -25, -15);
-
     glColor3f(1, 1, 1);
     glutWireSphere(2, 25, 25);
 
@@ -357,14 +383,18 @@ void drawSpaceStation()
 
     glPopMatrix();
 }
-
+// Draws the alien ship
 void drawAlienShip()
 {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     glPushMatrix();
     glColor3f(.5, 0, 0);
     glTranslatef(25, -25, -15);
     glutSolidCube(3);
     glPopMatrix();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glPushMatrix();
     glColor3f(0, .8, 0);
@@ -387,93 +417,48 @@ void drawAlienShip()
     glutWireSphere(2, 50, 50);
     glPopMatrix();
 }
-
-
-// Functions that draw the menu and sky
-void drawMenu() 
+// Draws the moon
+void drawMoon()
 {
-    drawMenuBox();
-    drawRadioButtons();
-    drawCheckBoxes();
-    drawText();
-}
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-void drawSky()
-{
-    drawBackgroundStars();
-    if (CB1Pressed) drawComet();
-    if (CB2Pressed) drawAlienShip();
-    if (CB3Pressed) drawUrsaMajor();
-    if (CB4Pressed) drawSpaceStation();
-}
+    glPushMatrix();
+    glTranslated(0, 0, -15);
+    glScalef(moonScale, moonScale, moonScale);
 
+    glPushMatrix();
+    glRotated(moonRotAngle, 0, 1, 0);
 
-// Draw scene for Menu and Sky
-void drawMenuScene(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glEnable(GL_DEPTH_TEST);
-    glLoadIdentity();
-    glFrustum(0.0, 10.0, 0.0, 10.0, 1.0, 20.0);
-    
-    drawMenu();
-   
-    glutSwapBuffers(); //instead of glFlush, double buffer
-}
+    double LightCPEq[4] = { 1, 0, 0, 0 };
+    glClipPlane(GL_CLIP_PLANE0, LightCPEq);
+    glEnable(GL_CLIP_PLANE0);
+    glColor3f(1, 1, 1);
+    glutSolidSphere(5, 25, 25);
+    glDisable(GL_CLIP_PLANE0);
 
-void drawSkyScene(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glEnable(GL_DEPTH_TEST);
-    glLoadIdentity();
-    glFrustum(-2.5, 2.5, -2.5, 2.5, 1.0, 20.0);
+    double DarkCPEq[4] = { -1, 0, 0, 0 };
+    glClipPlane(GL_CLIP_PLANE0, DarkCPEq);
+    glEnable(GL_CLIP_PLANE0);
     if (isDusk) {
-        glClearColor(7.0 / 255, 15.0 / 255, 32.0 / 255.0, -20.0);
+        glColor3f(7.0 / 255, 15.0 / 255, 32.0 / 255.0);
     }
     else {
-        glClearColor(250.0 / 255.0, 123.0 / 255.0, 98.0 / 255.0, -20.0);
+        glColor3f(250.0 / 255.0, 123.0 / 255.0, 98.0 / 255.0);
     }
+    glutSolidSphere(5, 25, 25);
+    glDisable(GL_CLIP_PLANE0);
 
-    drawSky();
 
-    glutSwapBuffers(); //instead of glFlush, double buffer
+    glPopMatrix();
+
+    glPopMatrix();
 }
+// End of functions that draw sky objects
 
 
-// Setup functions for the Menu window and Sky window
-void setupMenuWindow(void)
-{
-    glClearColor(8.0 / 255.0, 76.0 / 255.0, 97.0 / 255.0, -20.0);
-}
-
-void setupSkyWindow(void)
-{
-    glClearColor(7.0 / 255, 15.0 / 255, 32.0 / 255.0, -20.0);
-}
 
 
-// Window reshape functions
-void resizeMenu(int w, int h)
-{
-    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glFrustum(0.0, 10.0, 0.0, 10.0, 1.0, 20.0);
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void resizeSky(int w, int h)
-{
-    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glFrustum(-2.5, 2.5, -2.5, 2.5, 1.0, 20.0);
-    glMatrixMode(GL_MODELVIEW);
-}
-
-
+// User input functions
 // Keyboard input processing
 void keyInput(unsigned char key, int x, int y)
 {
@@ -482,11 +467,102 @@ void keyInput(unsigned char key, int x, int y)
     case 27:
         exit(0);
         break;
+    case 'q':
+        if (CB1Pressed)
+        {
+            CB1Pressed = false;
+        }
+        else
+        {
+            CB1Pressed = true;
+        }
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'w':
+        if (CB2Pressed)
+        {
+            CB2Pressed = false;
+        }
+        else
+        {
+            CB2Pressed = true;
+        }
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'e':
+        if (CB3Pressed)
+        {
+            CB3Pressed = false;
+        }
+        else
+        {
+            CB3Pressed = true;
+        }
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'r':
+        if (CB4Pressed)
+        {
+            CB4Pressed = false;
+        }
+        else
+        {
+            CB4Pressed = true;
+        }
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'a':
+        rbValue = 1;
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 's':
+        rbValue = 2;
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'd':
+        rbValue = 3;
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'f':
+        rbValue = 4;
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
+    case 'g':
+        rbValue = 5;
+        glutSetWindow(menuWindow);
+        glutPostRedisplay();
+        glutSetWindow(skyWindow);
+        glutPostRedisplay();
+        break;
     default:
         break;
     }
 }
-
+// Mouse input processing
 void mouseControlMenu(int button, int state, int x, int y)
 {
     int mouseX, mouseY;
@@ -497,7 +573,7 @@ void mouseControlMenu(int button, int state, int x, int y)
 
         // Checkboxes
         // postRedisplay is called during each button if-statement to prevent
-        // a redisplay if the user clicks out side the check-boxes/radio buttons.
+        // a redisplay if the user clicks outside the check-boxes/radio buttons.
         // This prevents random stars being re-generated if a user clicks the menu and
         // not a button.
         if (mouseX >= 15 && mouseX <= 20 && mouseY >= 68 && mouseY <= 73)
@@ -604,38 +680,160 @@ void mouseControlMenu(int button, int state, int x, int y)
         }
     }
 }
-
-
-
-// Popup Menu for the Sky window
+// Popup menu for the Sky window
+// Controller for the front menu
 void frontMenu(int value)
 {
-    if (value == 1) exit(0);
-}
-
-void timeMenu(int value)
-{
-    if (value == 2) isDusk = false;
-
-    if (value == 3) isDusk = true;
-
+    if (skyRot == 0) {
+        skyRot = 30;
+    }
+    else
+    {
+        skyRot = 0;
+    }
     glutPostRedisplay();
 }
-
+// Controller for time menu (dawn/dusk)
+void timeMenu(int value)
+{
+    if (value == 1) {
+        glClearColor(250.0 / 255.0, 123.0 / 255.0, 98.0 / 255.0, -20.0);
+        isDusk = false;
+    }
+    if (value == 2) {
+        glClearColor(7.0 / 255, 15.0 / 255, 32.0 / 255.0, -20.0);
+        isDusk = true;
+    }
+    glutPostRedisplay();
+}
+// Controller for moon menu (small/medium/large moon size)
+void moonMenu(int value)
+{
+    if (value == 1) {
+        moonScale = 1;
+    }
+    if (value == 2) {
+        moonScale = 2;
+    }
+    glutPostRedisplay();
+}
+// Draws the entire menu
 void drawPopupMenu(void)
 {
-    int subMenu;
-    subMenu = glutCreateMenu(timeMenu);
-    glutAddMenuEntry("Dawn", 2);
-    glutAddMenuEntry("Dusk", 3);
+    int timeSubMenu;
+    timeSubMenu = glutCreateMenu(timeMenu);
+    glutAddMenuEntry("Dawn", 1);
+    glutAddMenuEntry("Dusk", 2);
+
+    int moonSubMenu;
+    moonSubMenu = glutCreateMenu(moonMenu);
+    glutAddMenuEntry("Small", 1);
+    glutAddMenuEntry("Large", 2);
 
     glutCreateMenu(frontMenu);
-    glutAddSubMenu("Time", subMenu);
-    glutAddMenuEntry("Quit", 1);
+    glutAddSubMenu("Time", timeSubMenu);
+    glutAddSubMenu("Moon Size", moonSubMenu);
+    glutAddMenuEntry("Skew sky toggle", 1);
+    
 
     // The menu is triggered by the right mouse button.
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
+// Prints input instructions to the console
+void printInstructions()
+{
+    cout << "\nPress q to draw a comet" << endl;
+    cout << "\nPress w to draw an alien ship" << endl;
+    cout << "\nPress e to draw ursa major" << endl;
+    cout << "\nPress r to draw a space station" << endl;
+    cout << "\n" << endl;
+    cout << "\nPress a to draw a new moon" << endl;
+    cout << "\nPress s to draw a crescent moon" << endl;
+    cout << "\nPress d to draw a half moon" << endl;
+    cout << "\nPress f to draw a gibbous moon" << endl;
+    cout << "\nPress g to draw a full moon" << endl;
+    cout << "\n" << endl;
+    cout << "\nRight click in the sky window for more options" << endl;
+    cout << "\nPress Esc exit" << endl;
+}
+
+
+
+
+// Draw scene functions for Menu and Sky
+void  drawMenuScene(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
+    glEnable(GL_DEPTH_TEST);
+    glLoadIdentity();
+    glFrustum(0.0, 10.0, 0.0, 10.0, 1.0, 20.0);
+
+    drawMenuBox();
+    drawRadioButtons();
+    drawCheckBoxes();
+    drawText();
+
+    glutSwapBuffers(); //instead of glFlush, double buffer
+}
+void drawSkyScene(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
+    glEnable(GL_DEPTH_TEST);
+    glLoadIdentity();
+    glFrustum(-2.5, 2.5, -2.5, 2.5, 1.0, 20.0);
+
+    glPushMatrix();
+    // Entire sky rotation
+    glRotated(skyRot, 0, 0, 1);
+    drawBackgroundStars();
+    if (CB1Pressed) drawComet();
+    if (CB2Pressed) drawAlienShip();
+    if (CB3Pressed) drawUrsaMajor();
+    if (CB4Pressed) drawSpaceStation();
+    drawMoon();
+    glPopMatrix();
+
+    glutSwapBuffers(); //instead of glFlush, double buffer
+}
+
+
+// Setup and resize functions for both draw scene functions
+void setupMenuWindow(void)
+{
+    glClearColor(8.0 / 255.0, 76.0 / 255.0, 97.0 / 255.0, -20.0);
+}
+void setupSkyWindow(void)
+{
+    if (isDusk) {
+        glClearColor(7.0 / 255, 15.0 / 255, 32.0 / 255.0, -20.0);
+    }
+    else {
+        glClearColor(250.0 / 255.0, 123.0 / 255.0, 98.0 / 255.0, -20.0);
+    }
+}
+
+
+// Window reshape functions for both draw scene functions
+void resizeMenu(int w, int h)
+{
+    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(0.0, 10.0, 0.0, 10.0, 1.0, 20.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+void resizeSky(int w, int h)
+{
+    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-2.5, 2.5, -2.5, 2.5, 1.0, 20.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+
 
 
 // Main
@@ -643,14 +841,14 @@ int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-
+    printInstructions();
 
     // Menu window
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(100, 100);
     menuWindow = glutCreateWindow("Menu");
+    setupMenuWindow();
     glutDisplayFunc(drawMenuScene);
-    glClearColor(8.0 / 255.0, 76.0 / 255.0, 97.0 / 255.0, -20.0);
     glutMouseFunc(mouseControlMenu);
     glutReshapeFunc(resizeMenu);
 
@@ -658,17 +856,11 @@ int main(int argc, char** argv)
     glutInitWindowSize(1000, 1000);
     glutInitWindowPosition(100, 100);
     skyWindow = glutCreateWindow("Sky");
+    setupSkyWindow();
     drawPopupMenu();
     glutDisplayFunc(drawSkyScene);
-    if (isDusk) {
-        glClearColor(7.0 / 255, 15.0 / 255, 32.0 / 255.0, -20.0);
-    }
-    else {
-        glClearColor(250.0 / 255.0, 123.0 / 255.0, 98.0 / 255.0, -20.0);
-    }
     glutReshapeFunc(resizeSky);
  
-
     glutKeyboardFunc(keyInput);
     glutMainLoop();
     return 0;
