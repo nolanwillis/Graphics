@@ -8,11 +8,22 @@
 //* 
 //* Environment: Visual Studio Community 2022
 //* 
-//* Date submitted: February 13, 2022
+//* Date submitted: February 26, 2022
 //* 
-//* References: 
+//* References: None
 //* 
 //* Interactions: 
+//      Press q to draw a comet
+//      Press w to draw an alien ship
+//      Press e to draw ursa major
+//      Press r to draw a space station
+//      Press a to draw a new moon
+//      Press s to draw a crescent moon
+//      Press d to draw a half moon
+//      Press f to draw a gibbous moon
+//      Press g to draw a full moon
+//      Press right-click in the sky window for popup menu
+//      Press Esc to quit
 //*
 //************************************************************/
 
@@ -29,6 +40,7 @@
 #define PI 3.14159
 
 using namespace std;
+
 
 // Globals
 // Window identifiers
@@ -458,7 +470,7 @@ void drawMoon()
 
 
 
-// User input functions
+// Functions involved in user input
 // Keyboard input processing
 void keyInput(unsigned char key, int x, int y)
 {
