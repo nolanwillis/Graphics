@@ -55,6 +55,12 @@ float heliZ = 0;
 //Yaw
 int yaw = 0;
 
+//Mountain size and positioning
+//Z-value of mountain range
+int mountainZ = -17;
+int mountainScaleX = 4;
+int mountainScaleY = 4;
+
 
 //Function that sets the view mode (ortho or frust)
 void setViewMode()
@@ -71,7 +77,7 @@ void setViewMode()
 
 //Functions called in drawScene
 //Draws helicopter landing pad
-void drawHeliPad(void) {
+void drawHeliPad() {
     glColor3f(210.0 / 255.0, 209.0 / 255.0, 205 / 255.0);
     glPushMatrix();
     glTranslated(6, 0, -6.5);
@@ -79,17 +85,19 @@ void drawHeliPad(void) {
     glutSolidCube(1);
     glPopMatrix();
 }
+
 //Draws the ground 
-void drawGround(void) {
-    glColor3f(186.0 / 255.0, 166.0 / 255.0, 132 / 255.0);
+void drawGround() {
+    glColor3f(108.0 / 255.0, 165.0 / 255.0, 128.0 / 255.0);
     glPushMatrix();
     glTranslated(6, 0, -6.5);
     glScaled(100, .05, 100);
     glutSolidCube(1);
     glPopMatrix();
 }
+
 //Draws helicopter
-void drawHeli(void) {
+void drawHeli() {
     //Fuselage
     glColor3f(1, 0, 0);
     glPushMatrix();
@@ -154,7 +162,121 @@ void drawHeli(void) {
     glPopMatrix();
 }
 
-//Animation functions
+void drawHouse() {
+    glColor3f(0, .5, 1);
+    glPushMatrix();
+    glTranslated(15, 0, -14);
+    glScaled(2, 3.3, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glColor3f(0, .5, 1);
+    glPushMatrix();
+    glTranslated(15, 1.8, -14);
+    glScaled(1.3, 1, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glColor3f(.4, .4, .4);
+    glPushMatrix();
+    glTranslated(14.4, 2.2, -14);
+    glRotated(45, 0, 0, 1);
+    glScaled(2, .5, 1.5);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glColor3f(.4, .4, .4);
+    glPushMatrix();
+    glTranslated(15.5, 2.2, -14);
+    glRotated(-45, 0, 0, 1);
+    glScaled(2, .5, 1.5);
+    glutSolidCube(1);
+    glPopMatrix();
+}
+void drawTree() {
+    //Trunk
+    glColor3f(.4, .3, .3);
+    glPushMatrix();
+    glTranslated(0, .5, -6.5);
+    glRotated(90, 0, 0, 1);
+    glScaled(5, .2, .2);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Branches
+    //Branch facing north
+    glColor3f(.4, .3, .3);
+    glPushMatrix();
+    glTranslated(0, 2.5, -6.8);
+    glRotated(90, 0, 1, 0);
+    glRotated(70, 0, 0, 1);
+    glScaled(1.5, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Branch facing east
+    glColor3f(.4, .3, .3);
+    glPushMatrix();
+    glTranslated(.3, 2.5, -6.5);
+    glRotated(65, 0, 0, 1);
+    glScaled(1.8, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Branch facing south
+    glColor3f(.4, .3, .3);
+    glPushMatrix();
+    glTranslated(0, 2.5, -6.2);
+    glRotated(-90, 0, 1, 0);
+    glRotated(70, 0, 0, 1);
+    glScaled(1.5, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Branch facing west
+    glColor3f(.4, .3, .3);
+    glPushMatrix();
+    glTranslated(-.3, 2.5, -6.5);
+    glRotated(-65, 0, 0, 1);
+    glScaled(1.8, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Canopy
+    glColor3f(.2, 1, .2);
+    glPushMatrix();
+    glTranslated(0, 4, -6.5);
+    glutSolidSphere(1, 25, 25);
+    glPopMatrix();
+}
+void drawMountains() {
+    glColor3f(58.0 / 255.0, 86.0 / 255.0, 95.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-10.0, 0, 0);
+    glBegin(GL_TRIANGLE_STRIP);
+    glVertex3f(-1.0 * mountainScaleX, 1.0 * mountainScaleY, mountainZ);
+    glVertex3f(-1.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(0.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
+    glVertex3f(0.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(1.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
+    glVertex3f(1.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(2.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
+    glVertex3f(2.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(3.0 * mountainScaleX, 4.0 * mountainScaleY, mountainZ);
+    glVertex3f(3.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(4.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
+    glVertex3f(4.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(5.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
+    glVertex3f(5.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(6.0 * mountainScaleX, 4.0 * mountainScaleY, mountainZ);
+    glVertex3f(6.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(7.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
+    glVertex3f(7.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(8.0 * mountainScaleX, 5.0 * mountainScaleY, mountainZ);
+    glVertex3f(8.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glVertex3f(9.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
+    glVertex3f(9.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
+    glEnd();
+    glPopMatrix();
+}
+//Functions called in animate
 //Function that increases blade rotation
 void increaseBladeAngle() {
     if (mainRotorAngle < -360) {
@@ -179,18 +301,7 @@ void hover(int value) {
     glutPostRedisplay();
 }
 
-//Drawing routine.
-void drawScene(void)
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //Set view mode: ortho, frust, or persp
-    setViewMode();
-    //Clear modeview matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    //Enable depth testing
-    glEnable(GL_DEPTH_TEST);
-    
+void animate() {
     glutTimerFunc(20, hover, 1);
 
     if (propPower) {
@@ -199,8 +310,9 @@ void drawScene(void)
     else {
         glutIdleFunc(NULL);
     }
-    
-    //Set View
+}
+
+void setCameraView() {
     //View from the north
     if (eyePos == 0) {
         gluLookAt(6, 5, -15,
@@ -231,16 +343,34 @@ void drawScene(void)
             6, 5, -6,
             0, -1, 0);
     }
+}
 
+
+//Drawing routine.
+void drawScene(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //Set view mode: ortho, frust, or persp
+    setViewMode();
+    //Clear modeview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    //Enable depth testing
+    glEnable(GL_DEPTH_TEST);
+    
+    animate();
+
+    setCameraView();
+    
     drawHeliPad();
     drawGround();
-
+    drawHouse();
     glPushMatrix();
     glRotated(yaw, 0, 1, 0);
     drawHeli();
     glPopMatrix();
-
-
+    drawTree();
+    drawMountains();
 
     glutSwapBuffers();
 }
@@ -248,7 +378,7 @@ void drawScene(void)
 // Initialization routine.
 void setup(void)
 {
-    glClearColor(135.0/255.0, 206.0/255.0, 235.0/255.0, 0.0);
+    glClearColor(135.0/255.0, 206.0/255.0, 235.0/255.0, -21.0);
 }
 
 // OpenGL window reshape routine.
