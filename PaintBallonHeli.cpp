@@ -289,20 +289,67 @@ void increaseBladeAngle() {
     tailRotorAngle -= 10;
     glutPostRedisplay();
 }
+void pause() {
+
+}
 //Function that makes helicopter hover
 void hover(int value) {
     if (heliY < 10 && propPower && fly) {
         heliY += .05;
     }
-    else if (heliY > 0 && (!propPower || !fly)) {
+    if (heliY > 0 && (!propPower || !fly)) {
         heliY -= .1;
     }
+
     
     glutPostRedisplay();
+}
+//Function that moves the helicopter over the house
+void goToHouse(int value){
+    if (heliX < 9 && propPower && fly) {
+        heliX += .05;
+    }
+    if (heliZ > -7.5 && propPower && fly) {
+        heliZ -= .05;
+    }
+    if (heliY > 0 && (!propPower || !fly)) {
+        heliY -= .1;
+    }
+}
+//Function that moves the helicopter over the mountains
+void goToMountain(int value) {
+    if (heliX > 4 && propPower && fly) {
+        heliX -= .05;
+    }
+    if (heliY < 13 && propPower && fly) {
+        heliY += .05;
+    }
+    if (heliZ > -11 && propPower && fly) {
+        heliZ -= .05;
+    }
+    if (heliY > 0 && (!propPower || !fly)) {
+        heliY -= .1;
+    }
+}
+//Function that moves the helicopter over the tree
+void goToTree(int value) {
+    if (heliX > -6 && propPower && fly) {
+        heliX -= .05;
+    }
+    if (heliY > 10 && propPower && fly) {
+        heliY -= .05;
+    }
+    if (heliZ < 0 && propPower && fly) {
+        heliZ += .05;
+    }
+    if (heliY > 0 && (!propPower || !fly)) {
+        heliY -= .1;
+    }
 }
 
 void animate() {
     glutTimerFunc(20, hover, 1);
+    glutTimerFunc(20, goToHouse, 1);
 
     if (propPower) {
         glutIdleFunc(increaseBladeAngle);
