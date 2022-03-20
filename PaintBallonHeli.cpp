@@ -32,14 +32,23 @@
 #  include <GL/glut.h>
 #endif
 
+#define PI 3.14159
+
 using namespace std;
+
+//Global Variables------------------------------------------------------------------------
+
+//Window size
+int height, width;
+
+//Mouse click coordinates
+int mouseX, mouseY;
 
 //Camera position
 int eyePos = 2;
 
 //Angle for helicopter blade animation
-int mainRotorAngle = 0;
-int tailRotorAngle = 0;
+int mainRotorAngle = 0, tailRotorAngle = 0;
 
 //Boolean value to determine if the helicopter is running;
 int propPower = false;
@@ -47,20 +56,47 @@ int propPower = false;
 //Boolean value that allows the helicopter to fly;
 int fly = false;
 
-//Coordinates of the helicopter;
-//Location
-float heliX = 0;
-float heliY = 0;
-float heliZ = 0;
-//Yaw
-int yaw = 0;
+//Coordinates of the helicopter
+float heliX = 0, heliY = 0, heliZ = 0;
+
+//Value of the current leg of the flight path
+int pathLeg = 1;
+
+//Fuseladge id for selection
+int FUSELADGE = 1;
+
+//Value to keep track of selecting state
+bool isSelecting = false;
+
+//Value to keep track of the last selected item
+int itemID = 0;
+
+//Ballon color values
+float balloonR = .63, balloonG = .13, balloonB = .94;
+
+//Ballon Y coordinate modifier value
+float balloonY = 0;
+
+//Mountain color values 
+float mtnR = .23, mtnG = .34, mtnB = .37;
+
+//House roof color values
+float roofR = .4, roofG = .4, roofB = .4;
+
+//Tree canopy color values
+float canR = .2, canG = 1.0, canB = .2;
+
+//Value to keep track if the balloon is dropped
+bool isDropped = false;
 
 //Mountain size and positioning
-//Z-value of mountain range
 int mountainZ = -17;
-int mountainScaleX = 4;
-int mountainScaleY = 4;
+int mountainScaleX = 4, mountainScaleY = 3;
 
+//Values to keep track if objects are hit
+bool houseHit = false, mtnHit = false, treeHit = false;
+
+//----------------------------------------------------------------------------------------
 
 //Function that sets the view mode (ortho or frust)
 void setViewMode()
@@ -74,10 +110,24 @@ void setViewMode()
     glMatrixMode(GL_MODELVIEW);
 }
 
+void drawCircle(float R, float X, float Y) 
+{
+    glLineWidth(1);
+    int numVerts = 1000;
+    float Z = -17;
+    float t = 0;
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < numVerts; i++)
+    {
+        glVertex3f(X + R * cos(t), Y + R * sin(t), Z);
+        t += 2 * PI / numVerts;
+    }
+    glEnd();
+}
 
-//Functions called in drawScene
 //Draws helicopter landing pad
-void drawHeliPad() {
+void drawHeliPad() 
+{
     glColor3f(210.0 / 255.0, 209.0 / 255.0, 205 / 255.0);
     glPushMatrix();
     glTranslated(6, 0, -6.5);
@@ -87,7 +137,8 @@ void drawHeliPad() {
 }
 
 //Draws the ground 
-void drawGround() {
+void drawGround() 
+{
     glColor3f(108.0 / 255.0, 165.0 / 255.0, 128.0 / 255.0);
     glPushMatrix();
     glTranslated(6, 0, -6.5);
@@ -97,9 +148,10 @@ void drawGround() {
 }
 
 //Draws helicopter
-void drawHeli() {
+void drawHeli(float fuselageR, float fuselageG, float fuselageB) 
+{
     //Fuselage
-    glColor3f(1, 0, 0);
+    glColor3f(fuselageR, fuselageG, fuselageB);
     glPushMatrix();
     glTranslated(6 + heliX, 1 + heliY, -6.5 + heliZ);
     glScaled(1.2, .65, .75);
@@ -160,9 +212,19 @@ void drawHeli() {
     glScaled(.70, .1, .05);
     glutSolidCube(1);
     glPopMatrix();
+
+    //Balloon
+    glPushMatrix();
+    glColor3f(balloonR, balloonG, balloonB);
+    glTranslated(6 + heliX, .5 + heliY + balloonY, -6.5 + heliZ);
+    glutSolidSphere(.5, 25, 25);
+    glPopMatrix();
 }
 
-void drawHouse() {
+//Draws the house
+void drawHouse() 
+{
+    //Base
     glColor3f(0, .5, 1);
     glPushMatrix();
     glTranslated(15, 0, -14);
@@ -177,7 +239,15 @@ void drawHouse() {
     glutSolidCube(1);
     glPopMatrix();
 
-    glColor3f(.4, .4, .4);
+    //Roof
+    if (houseHit)
+    {
+        glColor3f(balloonR, balloonG, balloonB);
+    }
+    else 
+    {
+        glColor3f(roofR, roofG, roofB);
+    }
     glPushMatrix();
     glTranslated(14.4, 2.2, -14);
     glRotated(45, 0, 0, 1);
@@ -185,7 +255,6 @@ void drawHouse() {
     glutSolidCube(1);
     glPopMatrix();
 
-    glColor3f(.4, .4, .4);
     glPushMatrix();
     glTranslated(15.5, 2.2, -14);
     glRotated(-45, 0, 0, 1);
@@ -193,7 +262,10 @@ void drawHouse() {
     glutSolidCube(1);
     glPopMatrix();
 }
-void drawTree() {
+
+//Draws the tree
+void drawTree() 
+{
     //Trunk
     glColor3f(.4, .3, .3);
     glPushMatrix();
@@ -240,14 +312,32 @@ void drawTree() {
     glPopMatrix();
 
     //Canopy
-    glColor3f(.2, 1, .2);
+    if (houseHit)
+    {
+        glColor3f(balloonR, balloonG, balloonB);
+    }
+    else
+    {
+        glColor3f(canR, canG, canB);
+    }
     glPushMatrix();
     glTranslated(0, 4, -6.5);
     glutSolidSphere(1, 25, 25);
     glPopMatrix();
 }
-void drawMountains() {
-    glColor3f(58.0 / 255.0, 86.0 / 255.0, 95.0 / 255.0);
+
+//Draws the mountain range
+void drawMountains() 
+{
+    if (mtnHit) 
+    {
+        glColor3f(balloonR, balloonG, balloonB);
+    }
+    else
+    {
+        glColor3f(mtnR, mtnG, mtnB);
+    }
+    
     glPushMatrix();
     glTranslated(-10.0, 0, 0);
     glBegin(GL_TRIANGLE_STRIP);
@@ -276,153 +366,238 @@ void drawMountains() {
     glEnd();
     glPopMatrix();
 }
-//Functions called in animate
-//Function that increases blade rotation
-void increaseBladeAngle() {
-    if (mainRotorAngle < -360) {
+
+//Increases the angle of the rotor blades (main and tail rotor)
+void increaseBladeAngle() 
+{
+    if (mainRotorAngle < -360) 
+    {
         mainRotorAngle = 0;
     }
-    if (tailRotorAngle < -360) {
+    if (tailRotorAngle < -360) 
+    {
         tailRotorAngle = 0;
     }
     mainRotorAngle -= 10;
     tailRotorAngle -= 10;
     glutPostRedisplay();
 }
-void pause() {
 
-}
-//Function that makes helicopter hover
-void hover(int value) {
-    if (heliY < 10 && propPower && fly) {
+//Animates the movement of the entire helicopter
+void animateHeliMovement(int num) 
+{
+    //Allows the helicopter climb/fall independently
+    if (propPower && fly && heliY < 10) 
+    {
         heliY += .05;
     }
-    if (heliY > 0 && (!propPower || !fly)) {
+    if ((!propPower || !fly) && heliY > 0) 
+    {
         heliY -= .1;
     }
-
-    
+    //Controls the flight path
+    if (propPower && fly) 
+    {
+        if (pathLeg == 0) 
+        {
+            if (heliX < 0) 
+            {
+                heliX += .05;
+            }
+            else
+            {
+                pathLeg = 1;
+            }
+        }
+        if (pathLeg == 1) 
+        {
+            if (13.4 <= 6 + heliX <= 16.5 && -15.0 <= -6.5 + heliZ <= -13.0)
+            {
+                houseHit = true;
+            }
+            if (heliX < 15) 
+            {
+                heliX += .05;
+            }
+            if (heliZ > -7.5) 
+            {
+                heliZ -= .04;
+            }
+            else 
+            {
+                pathLeg = 2;
+            }
+        }
+        if (pathLeg == 2) 
+        {
+            if (heliX > 4) 
+            {
+                heliX -= .04;
+            }
+            if (heliZ > -11) 
+            {
+                heliZ -= .04;
+            }
+            else 
+            {
+                pathLeg = 3;
+            }
+        }
+        if (pathLeg == 3) 
+        {
+            if (heliX > -7) 
+            {
+                heliX -= .04;
+            }
+            if (heliZ < 0) 
+            {
+                heliZ += .04;
+            }
+            else
+            {
+                pathLeg = 0;
+            }
+        }
+    }
     glutPostRedisplay();
 }
-//Function that moves the helicopter over the house
-void goToHouse(int value){
-    if (heliX < 9 && propPower && fly) {
-        heliX += .05;
-    }
-    if (heliZ > -7.5 && propPower && fly) {
-        heliZ -= .05;
-    }
-    if (heliY > 0 && (!propPower || !fly)) {
-        heliY -= .1;
-    }
-}
-//Function that moves the helicopter over the mountains
-void goToMountain(int value) {
-    if (heliX > 4 && propPower && fly) {
-        heliX -= .05;
-    }
-    if (heliY < 13 && propPower && fly) {
-        heliY += .05;
-    }
-    if (heliZ > -11 && propPower && fly) {
-        heliZ -= .05;
-    }
-    if (heliY > 0 && (!propPower || !fly)) {
-        heliY -= .1;
-    }
-}
-//Function that moves the helicopter over the tree
-void goToTree(int value) {
-    if (heliX > -6 && propPower && fly) {
-        heliX -= .05;
-    }
-    if (heliY > 10 && propPower && fly) {
-        heliY -= .05;
-    }
-    if (heliZ < 0 && propPower && fly) {
-        heliZ += .05;
-    }
-    if (heliY > 0 && (!propPower || !fly)) {
-        heliY -= .1;
-    }
-}
 
-void animate() {
-    glutTimerFunc(20, hover, 1);
-    glutTimerFunc(20, goToHouse, 1);
-
-    if (propPower) {
+//Animates the helicopter blades
+void animateHeliBlades() 
+{
+    if (propPower) 
+    {
         glutIdleFunc(increaseBladeAngle);
     }
-    else {
+    else 
+    {
         glutIdleFunc(NULL);
     }
+    glutPostRedisplay();
 }
 
-void setCameraView() {
+//Animates the balloon falling
+void animateBalloon(int value)
+{
+    if (balloonY > -20) {
+        balloonY -= .4;
+    }
+    glutPostRedisplay();
+}
+
+//Sets the camera viewing position
+void setCameraView() 
+{
     //View from the north
-    if (eyePos == 0) {
+    if (eyePos == 0) 
+    {
         gluLookAt(6, 5, -15,
             6, 5, -6,
             0, 1, 0);
     }
     //View from the east
-    else if (eyePos == 1) {
+    else if (eyePos == 1) 
+    {
         gluLookAt(15.5, 5, -6,
             6, 5, -6,
             0, 1, 0);
     }
     //View from the south
-    else if (eyePos == 2) {
+    else if (eyePos == 2) 
+    {
         gluLookAt(6, 5, 2,
             6, 5, -6,
             0, 1, 0);
     }
     //View from the west
-    else if (eyePos == 3) {
+    else if (eyePos == 3) 
+    {
         gluLookAt(-3.5, 5, -6,
             6, 5, -6,
             0, 1, 0);
     }
     //View from above (not working)
-    else if (eyePos == 4) {
+    else if (eyePos == 4) 
+    {
         gluLookAt(6, 6, -6,
             6, 5, -6,
             0, -1, 0);
     }
 }
 
+//Determines if the mouse has clicked an object 
+void getID(int x, int y) {
+    unsigned char pixel[3];
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+    if ((int)pixel[0] == 0 && (int)pixel[1] == 255 && (int)pixel[2] == 0)
+    {
+        itemID = FUSELADGE;
+    }
+    else
+    {
+        itemID = 0;
+    }
+    isSelecting = false;
+    glutPostRedisplay();
+}
 
-//Drawing routine.
-void drawScene(void)
+//Draws the objects in the scene
+void drawObjects(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //Set view mode: ortho, frust, or persp
-    setViewMode();
-    //Clear modeview matrix
-    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     //Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    
-    animate();
-
+    //Set camera view
     setCameraView();
-    
+
+    //Draw objects
     drawHeliPad();
     drawGround();
     drawHouse();
-    glPushMatrix();
-    glRotated(yaw, 0, 1, 0);
-    drawHeli();
-    glPopMatrix();
     drawTree();
     drawMountains();
+    if (isSelecting)
+    {
+        drawHeli(0.0, 1.0, 0.0);
+    }
+    else
+    {
+        drawHeli(1.0, 0.0, 0.0);
+    }
+   
+    //Selection control (if a certain itemID is selected do something)
+    if (itemID == FUSELADGE)
+    {
+        glutTimerFunc(1, animateBalloon, 1);
+    }
+    
+    //Animation function calls
+    animateHeliBlades();
+    glutTimerFunc(5, animateHeliMovement, 1);
 
-    glutSwapBuffers();
 }
 
-// Initialization routine.
+//Drawing routine 
+void drawScene(void)
+{
+    //Draw everything with unique colors but don't display if user isSelecting
+     //glTranslated(6 + heliX, 1 + heliY, -6.5 + heliZ);
+    
+    if (isSelecting)
+    {
+        drawObjects();
+        getID(mouseX, mouseY);
+    }
+    //Draw everything normally
+    else
+    {
+        drawObjects();
+        glutSwapBuffers();
+    }
+}
+
+// Initialization routine
 void setup(void)
 {
     glClearColor(135.0/255.0, 206.0/255.0, 235.0/255.0, -21.0);
@@ -432,10 +607,15 @@ void setup(void)
 void resize(int w, int h)
 {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     setViewMode();
+    glMatrixMode(GL_MODELVIEW);
+    height = h;
+    width = w;
 }
 
-// Keyboard input processing routine.
+//Keyboard input processing
 void keyInput(unsigned char key, int x, int y)
 {
     switch (key)
@@ -492,7 +672,19 @@ void keyInput(unsigned char key, int x, int y)
     }
 }
 
-// Routine to output interaction instructions to the C++ window.
+//Mouse input processing
+void mouseInput(int button, int state, int x, int y) 
+{
+    if (button == GLUT_LEFT && state == GLUT_DOWN)
+    {
+        isSelecting = true;
+        mouseX = x;
+        mouseY = height - y;
+        glutPostRedisplay();
+    }
+}
+
+//Routine to output interaction instructions to the C++ window
 void printInteraction(void)
 {
     cout << "   Interaction" << endl;
@@ -512,7 +704,7 @@ void printInteraction(void)
     cout << "   Press esc to exit" << endl;
 }
 
-// Main routine.
+//Main routine
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -524,6 +716,7 @@ int main(int argc, char** argv)
     glutDisplayFunc(drawScene);
     glutReshapeFunc(resize);
     glutKeyboardFunc(keyInput);
+    glutMouseFunc(mouseInput);
     printInteraction();
     glutMainLoop();
 
