@@ -411,10 +411,6 @@ void animateHeliMovement(int num)
         }
         if (pathLeg == 1) 
         {
-            if (13.4 <= 6 + heliX <= 16.5 && -15.0 <= -6.5 + heliZ <= -13.0)
-            {
-                houseHit = true;
-            }
             if (heliX < 15) 
             {
                 heliX += .05;
