@@ -104,44 +104,45 @@ void drawCourtyard()
     //Right front railing
     glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
-    glTranslated(19.5, 5, -12);
+    glTranslated(19.5, 2.5, -12);
     glRotated(90, 0, 1, 0);
-    glScaled(.5, 10, 22.5);
+    glScaled(.5, 5, 22.5);
     glutSolidCube(1);
     glPopMatrix();
     //Left front railing
     glPushMatrix();
-    glTranslated(-7.5, 5, -12);
+    glTranslated(-7.5, 2.5, -12);
     glRotated(90, 0, 1, 0);
-    glScaled(.5, 10, 22.5);
+    glScaled(.5, 5, 22.5);
     glutSolidCube(1);
     glPopMatrix();
     //Right middle railing
     glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
-    glTranslated(31, 5, -23);
-    glScaled(.5, 10, 22.5);
+    glTranslated(31, 2.5, -23);
+    glScaled(.5, 5, 22.5);
     glutSolidCube(1);
     glPopMatrix();
     //Left middle railing
     glPushMatrix();
-    glTranslated(-19, 5, -23);
-    glScaled(.5, 10, 22.5);
+    glTranslated(-19, 2.5, -23);
+    glScaled(.5, 5, 22.5);
     glutSolidCube(1);
     glPopMatrix();
     //Right back railing
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
+    /*glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);*/
+    glColor3f(255.0 / 255.0, 0, 0);
     glPushMatrix();
-    glTranslated(23.5, 5, -32);
+    glTranslated(23.5, 2.5, -32);
     glRotated(90, 0, 1, 0);
-    glScaled(.5, 10, 15.5);
+    glScaled(.5, 5, 15.5);
     glutSolidCube(1);
     glPopMatrix();
     //Left back railing
     glPushMatrix();
-    glTranslated(-11.5, 5, -32);
+    glTranslated(-11.5, 2.5, -32);
     glRotated(90, 0, 1, 0);
-    glScaled(.5, 10, 15.5);
+    glScaled(.5, 5, 15.5);
     glutSolidCube(1);
     glPopMatrix();
 }
@@ -186,12 +187,224 @@ void drawHall()
     glScaled(3.2, 3.2, 60);
     glutSolidCube(1);
     glPopMatrix();
+    //Facade right
+    glColor3f(255.0 / 255.0, 0, 0);
+    glPushMatrix();
+    glTranslated(21.5, 18, -32);
+    glRotated(90, 0, 1, 0);
+    glScaled(.5, 40, 19.5);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Facade left
+    glPushMatrix();
+    glTranslated(-9.5, 18, -32);
+    glRotated(90, 0, 1, 0);
+    glScaled(.5, 40, 19.5);
+    glutSolidCube(1);
+    glPopMatrix();
 
     //Floor
+    glColor3f(116.0 / 255.0, 96.0 / 255.0, 72.0 / 255.0);
+    glPushMatrix();
+    glTranslated(5, 0, -62);
+    glScaled(35, 1, 60);
+    glutSolidCube(1);
+    glPopMatrix();
+}
+
+void drawFurniture()
+{
+    //Table 1
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-5, 4, -60);
+    glScaled(3, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Table beam 1
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-5, 2, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(3, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench 1
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-6.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench beam 1
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-6.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench 1
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-3.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench beam 1
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(-3.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    
+
+    //Table 2
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(2, 4, -60);
+    glScaled(3, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Table beam 2
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(2, 2, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(4, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench 2
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench beam 2
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench 2
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(3.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench beam 2
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(3.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Table 3
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(10, 4, -60);
+    glScaled(3, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Table beam 3
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(10, 2, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(4, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench 3
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(8.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench beam 3
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(8.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench 3
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(11.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench beam 3
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(11.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Table 4
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(17, 4, -60);
+    glScaled(3, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Table beam 4
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(17, 2, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(4, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench 4
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(15.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Left bench beam 4
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(15.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench 4
+    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glPushMatrix();
+    glTranslated(18.5, 2, -60);
+    glScaled(1.5, .5, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right bench beam 4
+    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
+    glPushMatrix();
+    glTranslated(18.5, 1, -60);
+    glRotated(90, 0, 0, 1);
+    glScaled(1.5, .25, 30);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Table 5
     glColor3f(101.0 / 255.0, 102.0 / 255.0, 105.0 / 255.0);
     glPushMatrix();
-    glTranslated(6, 0, -62);
-    glScaled(30, 1, 60);
+    glTranslated(5.5, 5, -87);
+    glRotated(90, 0, 1, 0);
+    glScaled(3, .5, 20);
     glutSolidCube(1);
     glPopMatrix();
 }
@@ -278,6 +491,7 @@ void drawObjects(void)
     drawBridge();
     drawCourtyard();
     drawHall();
+    drawFurniture();
 }
 
 //Drawing routine 
