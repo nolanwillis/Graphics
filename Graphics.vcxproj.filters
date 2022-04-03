@@ -36,5 +36,8 @@
     <ClCompile Include="PaintBallonHeli.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="magic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
