@@ -39,7 +39,7 @@ int height, width;
 int mouseX, mouseY;
 
 //Camera position values
-static float eyeX = 6, eyeY = 5, eyeZ = 2;
+static float eyeX = 6, eyeY = 8, eyeZ = 2;
 static float eyeAngle = 0;  //angle facing
 static float stepSize = 5.0;  //step size
 static float turnSize = 10.0; //degrees to turn
@@ -50,9 +50,34 @@ bool isSelecting = false;
 //Value to keep track of the last selected item
 int itemID = 0;
 
-//Mountain size and positioning
-int mountainZ = -17;
-int mountainScaleX = 4, mountainScaleY = 3;
+//Door id for selecting
+int DOOR = 1;
+
+//Value to keep track of door angle
+float doorAngle = 0;
+
+//Values to keep track of door x and z
+float doorX = 0, doorZ = 0;
+
+//Open/close value of door
+int isDoorOpen = 0;
+
+//Global specular and shininess arrays for all objects
+float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 };
+float materialShin[] = { 50.0 };
+
+//Position of light0
+float light0posX = 6.0, light0posY = 40.0, light0posZ = -5.0;
+
+//Colored materials for lighting
+//Stone: used on the courtyard and bridge
+float stoneMatAmbandDif[] = { 101.0 / 255.0, 102.0 / 255.0, 105 / 255.0, 1.0 };
+//Sandstone: used on outdoor walls and railings
+float sandstoneMatAmbandDif[] = { 114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0, 1.0 };
+//Wood: used on furniture and 
+float woodMatAmbandDif[] = { 70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0, 1.0 };
+//White
+float whiteMatAmbandDif[] = { 1.0, 1.0, 1.0, 1.0 };
 
 //--------------------------------------------------------------------------------------
 
@@ -70,21 +95,20 @@ void setViewMode()
 void drawBridge()
 {
     //Floor
-    glColor3f(101.0 / 255.0, 102.0 / 255.0, 105.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, stoneMatAmbandDif);
     glPushMatrix();
     glTranslated(6, 0, -6.5);
     glScaled(5, 1, 12);
     glutSolidCube(1);
     glPopMatrix();
     //Right railing
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
     glPushMatrix();
     glTranslated(8.5, 1, -6);
     glScaled(.5, 2, 12);
     glutSolidCube(1);
     glPopMatrix();
     //Left railing
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(3.5, 1, -6);
     glScaled(.5, 2, 12);
@@ -95,14 +119,14 @@ void drawBridge()
 void drawCourtyard() 
 {
     //Floor
-    glColor3f(101.0 / 255.0, 102.0 / 255.0, 105.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, stoneMatAmbandDif);
     glPushMatrix();
     glTranslated(6, 0, -22);
     glScaled(50, 1, 20);
     glutSolidCube(1);
     glPopMatrix();
     //Right front railing
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
     glPushMatrix();
     glTranslated(19.5, 2.5, -12);
     glRotated(90, 0, 1, 0);
@@ -117,7 +141,6 @@ void drawCourtyard()
     glutSolidCube(1);
     glPopMatrix();
     //Right middle railing
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(31, 2.5, -23);
     glScaled(.5, 5, 22.5);
@@ -129,42 +152,25 @@ void drawCourtyard()
     glScaled(.5, 5, 22.5);
     glutSolidCube(1);
     glPopMatrix();
-    //Right back railing
-    /*glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);*/
-    glColor3f(255.0 / 255.0, 0, 0);
-    glPushMatrix();
-    glTranslated(23.5, 2.5, -32);
-    glRotated(90, 0, 1, 0);
-    glScaled(.5, 5, 15.5);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Left back railing
-    glPushMatrix();
-    glTranslated(-11.5, 2.5, -32);
-    glRotated(90, 0, 1, 0);
-    glScaled(.5, 5, 15.5);
-    glutSolidCube(1);
-    glPopMatrix();
+  
 }
 
 void drawHall()
 {
     //Right wall
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
     glPushMatrix();
     glTranslated(22.5, 20, -62);
     glScaled(3, 40, 60);
     glutSolidCube(1);
     glPopMatrix();
     //Left wall
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(-11.5, 20, -62);
     glScaled(3, 40, 60);
     glutSolidCube(1);
     glPopMatrix();
     //Right roof
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(15, 61, -62);
     glRotated(20, 0, 0, 1);
@@ -172,7 +178,6 @@ void drawHall()
     glutSolidCube(1);
     glPopMatrix();
     //Left roof
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(-4, 61, -62);
     glRotated(-20, 0, 0, 1);
@@ -180,31 +185,55 @@ void drawHall()
     glutSolidCube(1);
     glPopMatrix();
     //Center beam for roof
-    glColor3f(114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0);
     glPushMatrix();
     glTranslated(5.5, 85, -62);
     glRotated(45, 0, 0, 1);
     glScaled(3.2, 3.2, 60);
     glutSolidCube(1);
     glPopMatrix();
-    //Facade right
-    glColor3f(255.0 / 255.0, 0, 0);
+    //Door frame right
     glPushMatrix();
     glTranslated(21.5, 18, -32);
     glRotated(90, 0, 1, 0);
     glScaled(.5, 40, 19.5);
     glutSolidCube(1);
     glPopMatrix();
-    //Facade left
+    //Door frame left
     glPushMatrix();
     glTranslated(-9.5, 18, -32);
     glRotated(90, 0, 1, 0);
     glScaled(.5, 40, 19.5);
     glutSolidCube(1);
     glPopMatrix();
-
+    //Door frame top
+    glPushMatrix();
+    glTranslated(6, 32, -32);
+    glRotated(90, 0, 1, 0);
+    glScaled(.5, 15, 15);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Facade front
+    glPushMatrix();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glTranslated(-4.5, 38, -32);
+    glBegin(GL_POLYGON);
+    glVertex3f(-9, 0, 0);
+    glVertex3f(10, 48, 0);
+    glVertex3f(29, 0, 0);
+    glEnd();
+    glPopMatrix();
+    //Facade back
+    glPushMatrix();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glTranslated(-4.5, 38, -92);
+    glBegin(GL_POLYGON);
+    glVertex3f(-9, 0, 0);
+    glVertex3f(10, 48, 0);
+    glVertex3f(29, 0, 0);
+    glEnd();
+    glPopMatrix();
     //Floor
-    glColor3f(116.0 / 255.0, 96.0 / 255.0, 72.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, stoneMatAmbandDif);
     glPushMatrix();
     glTranslated(5, 0, -62);
     glScaled(35, 1, 60);
@@ -215,14 +244,13 @@ void drawHall()
 void drawFurniture()
 {
     //Table 1
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, woodMatAmbandDif);
     glPushMatrix();
     glTranslated(-5, 4, -60);
     glScaled(3, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Table beam 1
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(-5, 2, -60);
     glRotated(90, 0, 0, 1);
@@ -230,14 +258,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Left bench 1
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(-6.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Left bench beam 1
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(-6.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -245,14 +271,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Right bench 1
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(-3.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Right bench beam 1
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(-3.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -262,14 +286,12 @@ void drawFurniture()
     
 
     //Table 2
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(2, 4, -60);
     glScaled(3, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Table beam 2
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(2, 2, -60);
     glRotated(90, 0, 0, 1);
@@ -277,14 +299,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Left bench 2
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Left bench beam 2
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -292,14 +312,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Right bench 2
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(3.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Right bench beam 2
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(3.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -308,14 +326,12 @@ void drawFurniture()
     glPopMatrix();
 
     //Table 3
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(10, 4, -60);
     glScaled(3, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Table beam 3
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(10, 2, -60);
     glRotated(90, 0, 0, 1);
@@ -323,14 +339,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Left bench 3
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(8.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Left bench beam 3
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(8.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -338,14 +352,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Right bench 3
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(11.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Right bench beam 3
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(11.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -354,14 +366,12 @@ void drawFurniture()
     glPopMatrix();
 
     //Table 4
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(17, 4, -60);
     glScaled(3, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Table beam 4
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(17, 2, -60);
     glRotated(90, 0, 0, 1);
@@ -369,14 +379,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Left bench 4
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(15.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Left bench beam 4
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(15.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -384,14 +392,12 @@ void drawFurniture()
     glutSolidCube(1);
     glPopMatrix();
     //Right bench 4
-    glColor3f(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
     glPushMatrix();
     glTranslated(18.5, 2, -60);
     glScaled(1.5, .5, 30);
     glutSolidCube(1);
     glPopMatrix();
     //Right bench beam 4
-    glColor3f(4.0 / 255.0, 3.0 / 255.0, 1.0 / 255.0);
     glPushMatrix();
     glTranslated(18.5, 1, -60);
     glRotated(90, 0, 0, 1);
@@ -400,7 +406,6 @@ void drawFurniture()
     glPopMatrix();
 
     //Table 5
-    glColor3f(101.0 / 255.0, 102.0 / 255.0, 105.0 / 255.0);
     glPushMatrix();
     glTranslated(5.5, 5, -87);
     glRotated(90, 0, 1, 0);
@@ -409,38 +414,43 @@ void drawFurniture()
     glPopMatrix();
 }
 
-
-//Draws the mountain range
-void drawMountains() 
-{
-    glColor3f(.2, .2, .2);
+void drawDoors(float R, float G, float B) {
+    //Door Left
+    glColor3f(R, G, B);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, woodMatAmbandDif);
     glPushMatrix();
-    glTranslated(-10.0, 0, 0);
-    glBegin(GL_TRIANGLE_STRIP);
-    glVertex3f(-1.0 * mountainScaleX, 1.0 * mountainScaleY, mountainZ);
-    glVertex3f(-1.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(0.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
-    glVertex3f(0.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(1.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
-    glVertex3f(1.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(2.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
-    glVertex3f(2.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(3.0 * mountainScaleX, 4.0 * mountainScaleY, mountainZ);
-    glVertex3f(3.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(4.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
-    glVertex3f(4.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(5.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
-    glVertex3f(5.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(6.0 * mountainScaleX, 4.0 * mountainScaleY, mountainZ);
-    glVertex3f(6.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(7.0 * mountainScaleX, 2.0 * mountainScaleY, mountainZ);
-    glVertex3f(7.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(8.0 * mountainScaleX, 5.0 * mountainScaleY, mountainZ);
-    glVertex3f(8.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glVertex3f(9.0 * mountainScaleX, 3.0 * mountainScaleY, mountainZ);
-    glVertex3f(9.0 * mountainScaleX, 0.0 * mountainScaleY, mountainZ);
-    glEnd();
+    glTranslated(3.1 - doorX, 12.5, -32 + doorZ);
+    glRotated(-doorAngle, 0, 1, 0);
+    glRotated(90, 0, 1, 0);
+    glScaled(.5, 24, 5.8);
+    glutSolidCube(1);
     glPopMatrix();
+    //Door Right
+    glPushMatrix();
+    glTranslated(8.9 + doorX, 12.5, -32 + doorZ);
+    glRotated(doorAngle, 0, 1, 0);
+    glRotated(-90, 0, 1, 0);
+    glScaled(.5, 24, 5.8);
+    glutSolidCube(1);
+    glPopMatrix();
+}
+
+void animateDoorOpen(int value) {
+    if (doorAngle < 90) {
+        doorAngle += .5;
+        doorX += .016;
+        doorZ += .012;
+    }
+    glutPostRedisplay();
+}
+
+void animateDoorClose(int value) {
+    if (doorAngle > 0) {
+        doorAngle -= .5;
+        doorX -= .016;
+        doorZ -= .012;
+    }
+    glutPostRedisplay();
 }
 
 //Sets the camera viewing position
@@ -449,8 +459,6 @@ void setCameraView()
    gluLookAt(eyeX, eyeY, eyeZ,
              eyeX + sin(eyeAngle * PI/180), eyeY, eyeZ + cos(eyeAngle * PI/180),
              0, 1, 0);
-    
-   
 }
 
 //Determines the ID of the object the mouse has clicked 
@@ -459,7 +467,8 @@ void getID(int x, int y) {
     glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
     if ((int)pixel[0] == 0 && (int)pixel[1] == 255 && (int)pixel[2] == 0)
     {
-        cout << "Helicopter selected" << endl;
+        itemID = DOOR;
+        cout << "Door Selected" << endl;
     }
     else
     {
@@ -472,40 +481,64 @@ void getID(int x, int y) {
 //Draws the objects in the scene
 void drawObjects(void)
 {
+    if (isSelecting)
+    {
+        drawDoors(0.0, 1.0, 0.0);
+    }
+    else
+    {
+        drawDoors(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+    }
+
+    if (itemID == DOOR) {
+        glutTimerFunc(.001, animateDoorOpen, 1);
+    }
+    else
+    {
+        glutTimerFunc(.001, animateDoorClose, 1);
+    }
+    
+    //Draw sphere at location of light0
+    glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glTranslated(light0posX, light0posY, light0posZ);
+    glutSolidSphere(1, 25, 25);
+    glPopMatrix();
+
+
+    drawBridge();
+    drawCourtyard();
+    drawHall();
+    drawFurniture();
+
+}
+
+//Drawing routine 
+void drawScene(void)
+{
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     //Enable depth testing
     glEnable(GL_DEPTH_TEST);
     //Set camera view
     setCameraView();
-    
-    if (isSelecting)
-    {
-       
-    }
-    else
-    {
-       
-    }
 
-    drawBridge();
-    drawCourtyard();
-    drawHall();
-    drawFurniture();
-}
+    //Set specular and shininess for all items
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShin);
 
-//Drawing routine 
-void drawScene(void)
-{
+
     //Draw everything with unique colors but don't display if user isSelecting
     if (isSelecting)
     {
+        glDisable(GL_LIGHTING);
         drawObjects();
         getID(mouseX, mouseY);
     }
     //Draw everything normally
     else
     {
+        glEnable(GL_LIGHTING);
         drawObjects();
         glutSwapBuffers();
     }
@@ -514,6 +547,31 @@ void drawScene(void)
 // Initialization routine
 void setup(void)
 {
+    //Main lighting setup
+    glEnable(GL_LIGHTING);
+
+    glEnable(GL_NORMALIZE);
+
+    float lightAmbLight0[] = { 0.0, 0.0, 0.0, 1.0 };
+    float lightDifAndSpecLight0[] = { 1.0, 1.0, 1.0, 1.0 };
+    float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
+    float globAmb[] = { 0.0, 0.0, 0.0, 1.0 };
+
+    //Define properties for light0
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
+
+    //Enable light0
+    glEnable(GL_LIGHT0);
+
+    //Set global properties of lighting
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); //Global ambient
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
+
+    //Set world color
     glClearColor(181.0/255.0, 185.0/255.0, 188.0/255.0, -21.0);
 }
 
@@ -552,6 +610,17 @@ void keyInput(unsigned char key, int x, int y)
         eyeAngle += turnSize;
         glutPostRedisplay();
         break;
+    case 'o':
+        if (isDoorOpen == 0)
+        {
+            isDoorOpen = 1;
+        }
+        else
+        {
+            isDoorOpen = 0;
+        }
+        glutPostRedisplay();
+        break;
     case 27:
         exit(0);
         break;
@@ -584,13 +653,15 @@ void mouseInput(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT && state == GLUT_DOWN)
     {
-        eyeY += 2;
+        isSelecting = true;
+        mouseX = x;
+        mouseY = height - y;
         glutPostRedisplay();
     }
 
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
-        eyeY -= 2;
+        
         glutPostRedisplay();
     }
 }
