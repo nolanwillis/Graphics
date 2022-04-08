@@ -39,10 +39,13 @@ int height, width;
 int mouseX, mouseY;
 
 //Camera position values
-static float eyeX = 6, eyeY = 8, eyeZ = 2;
+float eyeX = 6, eyeY = 8, eyeZ = 2;
 static float eyeAngle = 0;  //angle facing
 static float stepSize = 5.0;  //step size
 static float turnSize = 10.0; //degrees to turn
+
+//Flashlight position values
+float flX = -5, flY = 5, flZ = -70;
 
 //Value to keep track of selecting state
 bool isSelecting = false;
@@ -50,8 +53,8 @@ bool isSelecting = false;
 //Value to keep track of the last selected item
 int itemID = 0;
 
-//Door id for selecting
-int DOOR = 1;
+//IDs for selecting
+int DOOR = 1, WAND = 2, HAT = 3, FL = 4;
 
 //Value to keep track of door angle
 float doorAngle = 0;
@@ -62,12 +65,30 @@ float doorX = 0, doorZ = 0;
 //Open/close value of door
 int isDoorOpen = 0;
 
+//On/off lightSwitch
+bool lightOn = false;
+
+//Near flashlight value for animation (when near animate fl to eye pos)
+bool nearFL = false;
+
+//Boolean to turn on/off collision
+bool collActive = true;
+
+//Wand position (0, 0, 0 is on the table in the hall)
+float wandX = 0, wandY = 0, wandZ = 0;
+
+//Wand rotation angle
+float wandAngle = 0;
+
 //Global specular and shininess arrays for all objects
 float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 };
 float materialShin[] = { 50.0 };
 
 //Position of light0
-float light0posX = 6.0, light0posY = 40.0, light0posZ = -5.0;
+float light0posX = 6.0, light0posY = 60.0, light0posZ = -65.0;
+
+//Position of light1
+float light1posX = 5.5, light1posY = 6 , light1posZ = -16.5;
 
 //Colored materials for lighting
 //Stone: used on the courtyard and bridge
@@ -78,6 +99,24 @@ float sandstoneMatAmbandDif[] = { 114.0 / 255.0, 107.0 / 255.0, 82.0 / 255.0, 1.
 float woodMatAmbandDif[] = { 70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0, 1.0 };
 //White
 float whiteMatAmbandDif[] = { 1.0, 1.0, 1.0, 1.0 };
+//Dark Grey
+float darkGreyMatAmbandDif[] = { .2, .2, .2, 1.0 };
+//Hat color
+float hatMatAmbandDif[] = { 100.0/255.0, 85.0/255.0, 68.0/255, 1.0 };
+//Black
+float blackMatAmbandDif[] = { 0, 0, 0, 1.0 };
+//Red
+float redMatAmbandDif[] = { 1.0, 0, 0, 1.0 };
+
+//Specular and shininess values for the hat
+float hatSpec[] = { 100.0 / 255.0, 85.0 / 255.0, 68.0 / 255, 1.0 };
+float hatShin[] = { 128 };
+
+//Emissive values for the want
+float wandEmiss[] = { 0.9, 0.0, 0.0, 1.0 };
+
+//Default emissive values
+float defEmiss[] = { 0.0, 0.0, 0.0, 1.0 };
 
 //--------------------------------------------------------------------------------------
 
@@ -89,7 +128,6 @@ void setViewMode()
     gluPerspective(90, 1, 1, 150);
     glMatrixMode(GL_MODELVIEW);
 }
-
 
 //Draws the ground 
 void drawBridge()
@@ -157,81 +195,137 @@ void drawCourtyard()
 
 void drawHall()
 {
-    //Right wall
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
-    glPushMatrix();
-    glTranslated(22.5, 20, -62);
-    glScaled(3, 40, 60);
-    glutSolidCube(1);
-    glPopMatrix();
+    //Outside color
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
+    //Inside color
+    glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+
     //Left wall
     glPushMatrix();
-    glTranslated(-11.5, 20, -62);
-    glScaled(3, 40, 60);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Right roof
-    glPushMatrix();
-    glTranslated(15, 61, -62);
-    glRotated(20, 0, 0, 1);
-    glScaled(3, 50, 60);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Left roof
-    glPushMatrix();
-    glTranslated(-4, 61, -62);
-    glRotated(-20, 0, 0, 1);
-    glScaled(3, 50, 60);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Center beam for roof
-    glPushMatrix();
-    glTranslated(5.5, 85, -62);
-    glRotated(45, 0, 0, 1);
-    glScaled(3.2, 3.2, 60);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Door frame right
-    glPushMatrix();
-    glTranslated(21.5, 18, -32);
+    glTranslated(-12.5, 0, -32);
     glRotated(90, 0, 1, 0);
-    glScaled(.5, 40, 19.5);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Door frame left
-    glPushMatrix();
-    glTranslated(-9.5, 18, -32);
-    glRotated(90, 0, 1, 0);
-    glScaled(.5, 40, 19.5);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Door frame top
-    glPushMatrix();
-    glTranslated(6, 32, -32);
-    glRotated(90, 0, 1, 0);
-    glScaled(.5, 15, 15);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Facade front
-    glPushMatrix();
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glTranslated(-4.5, 38, -32);
+    glScaled(60, 38, 0);
     glBegin(GL_POLYGON);
-    glVertex3f(-9, 0, 0);
-    glVertex3f(10, 48, 0);
-    glVertex3f(29, 0, 0);
+    glNormal3f(0.0, 0.0, 1.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0); 
     glEnd();
     glPopMatrix();
+
+    //Left roof
+    glPushMatrix();
+    glTranslated(-12.5, 38, -32);
+    glRotated(-22, 0, 0, 1);
+    glRotated(90, 0, 1, 0);
+    glScaled(60, 50, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 0.0, 1.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
     //Facade back
     glPushMatrix();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glTranslated(-4.5, 38, -92);
     glBegin(GL_POLYGON);
+    glNormal3f(0.0, -1.0, 0.0);
     glVertex3f(-9, 0, 0);
     glVertex3f(10, 48, 0);
     glVertex3f(29, 0, 0);
     glEnd();
     glPopMatrix();
+
+    //Outside color (switch GL_BACK/GL_FRONT, transformations are different)
+    glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
+    //Inside color
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+
+    //Right wall
+    glPushMatrix();
+    glTranslated(22.5, 0, -32);
+    glRotated(90, 0, 1, 0);
+    glScaled(60, 38, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 0.0, -1.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
+    //Right roof
+    glPushMatrix();
+    glTranslated(23.5, 37, -32);
+    glRotated(22, 0, 0, 1);
+    glRotated(90, 0, 1, 0);
+    glScaled(60, 50, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 0.0, -1.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
+    //Facade front
+    glPushMatrix();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glTranslated(-4.5, 38, -32);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 1.0, 0.0);
+    glVertex3f(-9, 0, 0);
+    glVertex3f(10, 48, 0);
+    glVertex3f(29, 0, 0);
+    glEnd();
+    glPopMatrix();
+
+    //Front left
+    glPushMatrix();
+    glTranslated(-19.5, 0, -32);
+    glScaled(20, 38, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 1.0, 0.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
+    //Front center
+    glPushMatrix();
+    glTranslated(.5, 24.5, -32);
+    glScaled(11, 13.5, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 1.0, 0.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
+    //Front right
+    glPushMatrix();
+    glTranslated(11.5, 0, -32);
+    glScaled(20, 38, 0);
+    glBegin(GL_POLYGON);
+    glNormal3f(0.0, 1.0, 0.0);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+
     //Floor
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, stoneMatAmbandDif);
     glPushMatrix();
@@ -414,6 +508,83 @@ void drawFurniture()
     glPopMatrix();
 }
 
+void drawWand(float R, float G, float B) {
+    
+    glPushMatrix(); //Transformations to move all parts of the wand
+    glTranslated(wandX, wandY, wandZ);
+    glRotated(wandAngle, 0, 1, 0);
+
+    glColor3f(R, G, B); 
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
+    glPushMatrix(); //Transformations for each part of the wand
+    glTranslated(5.5, 6, -86);
+    glScaled(.1, .1, 1.2);
+    glutSolidCube(1);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    if (itemID == WAND) {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, wandEmiss);
+    }
+    else {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, defEmiss);
+    }
+    glPushMatrix();
+    glTranslated(5.5, 6, -86.5);
+    glScaled(.11, .11, .3);
+    glutSolidCube(1);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, defEmiss); //Reset emissive for all other objects
+
+    glPopMatrix();
+}
+
+void drawSelectionHat(float R, float G, float B) {
+    glColor3f(R, G, B);
+    //Set ambient, diffuse, specular, and shininess values for hat
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, hatMatAmbandDif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, hatSpec);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, hatShin);
+    //Draw hat
+    glPushMatrix();
+    glTranslated(2.5, 6, -86);
+    glRotated(-90, 1, 0, 0);
+    glutSolidTorus(.2, .8, 25, 25);
+    glutSolidCone(.8, 3.5, 25, 25);
+    glPopMatrix();
+    //Reset specular and shininess values
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShin);
+}
+
+void drawFlashlight()
+{
+    //Transformations to position the flashlighta
+    glPushMatrix();
+    if (nearFL) {
+       glTranslated(eyeX - flX, 3, flZ - eyeZ - 1);
+    }
+    glTranslated(flX, flY, flZ);
+    glRotated(180, 1, 0, 0);
+   
+
+    //Transformations to draw the flashlight
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    
+    glPushMatrix();
+    glTranslated(0, 0, 0);
+    glRotated(180, 0, 1, 0);
+    glutSolidCone(.5, .5, 25, 25);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslated(0, 0, -.8);
+    glScaled(.3, .3, 1.2);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
 void drawDoors(float R, float G, float B) {
     //Door Left
     glColor3f(R, G, B);
@@ -453,6 +624,32 @@ void animateDoorClose(int value) {
     glutPostRedisplay();
 }
 
+void animateWand(int value) {
+    if (wandX > -3) {
+        wandX -= .022;
+    }
+    if (wandY < 4) {
+        wandY += .03;
+    }
+    if (wandZ < 1) {
+        wandZ += .03;
+    }
+    glutPostRedisplay();
+}
+
+void animateWandBack(int value) {
+    if (wandX < 0) {
+        wandX += .022;
+    }
+    if (wandY > 0) {
+        wandY -= .03;
+    }
+    if (wandZ > 0) {
+        wandZ -= .03;
+    }
+    glutPostRedisplay();
+}
+
 //Sets the camera viewing position
 void setCameraView() 
 {
@@ -470,6 +667,16 @@ void getID(int x, int y) {
         itemID = DOOR;
         cout << "Door Selected" << endl;
     }
+    else if ((int)pixel[0] == 255 && (int)pixel[1] == 0 && (int)pixel[2] == 0)
+    {
+        itemID = WAND;
+        cout << "Wand selected" << endl;
+    }
+    else if ((int)pixel[0] == 0 && (int)pixel[1] == 0 && (int)pixel[2] == 255)
+    {
+        itemID = WAND;
+        cout << "Hat selected" << endl;
+    }
     else
     {
         itemID = 0;
@@ -478,18 +685,40 @@ void getID(int x, int y) {
     glutPostRedisplay();
 }
 
+//Flashlight collision detection
+void collision(void)
+{
+    if (-10 <= eyeX && eyeX<= -8.0 && -75.0 <= eyeZ && eyeZ <= -64.0 && collActive)
+    {
+        cout << "Near flashlight" << endl;
+        collActive = false;
+        nearFL = true;
+    }
+}
+
 //Draws the objects in the scene
 void drawObjects(void)
 {
     if (isSelecting)
     {
+        drawWand(1.0, 0.0, 0.0);
         drawDoors(0.0, 1.0, 0.0);
+        drawSelectionHat(0.0, 0.0, 1.0);
     }
     else
     {
-        drawDoors(70.0 / 255.0, 50.0 / 255.0, 34.0 / 255.0);
+        drawDoors(.2, .2, .2);
+        drawWand(.2, .2, .2);
+        drawSelectionHat(.2, .2, .2);
     }
 
+    if (itemID == WAND) {
+        glutTimerFunc(.05, animateWand, 1);
+    }
+    else
+    {
+        glutTimerFunc(.05, animateWandBack, 1);
+    }
     if (itemID == DOOR) {
         glutTimerFunc(.001, animateDoorOpen, 1);
     }
@@ -497,6 +726,8 @@ void drawObjects(void)
     {
         glutTimerFunc(.001, animateDoorClose, 1);
     }
+
+
     
     //Draw sphere at location of light0
     glPushMatrix();
@@ -505,12 +736,20 @@ void drawObjects(void)
     glutSolidSphere(1, 25, 25);
     glPopMatrix();
 
+    glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glTranslated(light1posX, light1posY, light1posZ);
+    glutSolidSphere(1, 25, 25);
+    glPopMatrix();
+
+    //Check if user is near flashlight
+    collision();
 
     drawBridge();
     drawCourtyard();
     drawHall();
     drawFurniture();
-
+    drawFlashlight();
 }
 
 //Drawing routine 
@@ -544,35 +783,59 @@ void drawScene(void)
     }
 }
 
-// Initialization routine
-void setup(void)
+//Setup lighting
+void setupLighting(void)
 {
     //Main lighting setup
     glEnable(GL_LIGHTING);
 
     glEnable(GL_NORMALIZE);
 
+    //Properties for light0 (light in the hall)
     float lightAmbLight0[] = { 0.0, 0.0, 0.0, 1.0 };
-    float lightDifAndSpecLight0[] = { 1.0, 1.0, 1.0, 1.0 };
+    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
     float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
-    float globAmb[] = { 0.0, 0.0, 0.0, 1.0 };
-
-    //Define properties for light0
+    //Define properties for light0 
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
+    //Enable for light0 in keyboard input function
 
-    //Enable light0
-    glEnable(GL_LIGHT0);
+    //Properties for light1 
+    float lightAmbLight1[] = { 0.0, 0.0, 0.0, 1.0 };
+    float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
+    float lightPosLight1[] = { light1posX, light1posY, light1posZ, 1.0 };
+    //Define properties for light1
+   
+    glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPosLight1);
+    //Enable light1
+    /*glEnable(GL_LIGHT1);*/
+
+    /*float spotDirection[] = { 0.0, -1.0, 0.0 };
+    static float spotAngle = 10.0;
+    static float spotExponent = 2.0;*/
+
+    //Global ambient 
+    float globAmb[] = { .6, .6, .6, 1.0 };
 
     //Set global properties of lighting
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); //Global ambient
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
+}
+
+// Initialization routine
+void setup(void)
+{
+    //Setup lighting
+    setupLighting();
 
     //Set world color
-    glClearColor(181.0/255.0, 185.0/255.0, 188.0/255.0, -21.0);
+    glClearColor(72.0/255.0, 52.0/255.0, 117.0/255.0, -21.0);
 }
 
 // OpenGL window reshape routine.
@@ -595,11 +858,13 @@ void keyInput(unsigned char key, int x, int y)
     case 'w':
         eyeX += stepSize * sin(eyeAngle * PI / 180);
         eyeZ += stepSize * cos(eyeAngle * PI / 180);
+     
         glutPostRedisplay();
         break;
     case 's':
         eyeX -= stepSize * sin(eyeAngle * PI / 180);
         eyeZ -= stepSize * cos(eyeAngle * PI / 180);
+       
         glutPostRedisplay();
         break;
     case 'd':
@@ -608,6 +873,7 @@ void keyInput(unsigned char key, int x, int y)
         break;
     case 'a':
         eyeAngle += turnSize;
+      
         glutPostRedisplay();
         break;
     case 'o':
@@ -621,10 +887,20 @@ void keyInput(unsigned char key, int x, int y)
         }
         glutPostRedisplay();
         break;
+    case 'L':
+        if (lightOn) {
+            glDisable(GL_LIGHT0);
+            lightOn = false;
+        }
+        else {
+            glEnable(GL_LIGHT0);
+            lightOn = true;
+        }
+        glutPostRedisplay();
+        break;
     case 27:
         exit(0);
         break;
-
     default:
         break;
     }
