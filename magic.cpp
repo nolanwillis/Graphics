@@ -59,7 +59,7 @@ int DOOR = 1, WAND = 2, HAT = 3, FL = 4;
 //Value to keep track of door angle
 float doorAngle = 0;
 
-//Values to keep track of door x and z
+//Door x and y offsets (for animation)
 float doorX = 0, doorZ = 0;
 
 //Open/close value of door
@@ -68,21 +68,26 @@ int isDoorOpen = 0;
 //On/off lightSwitch
 bool lightOn = false;
 
-//Near flashlight value for animation (when near animate fl to eye pos)
+//Near flashlight value for animation (when near, animate fl to eye pos)
 bool nearFL = false;
 
 //Boolean to turn on/off collision
 bool collActive = true;
 
-//Wand position (0, 0, 0 is on the table in the hall)
+//Wand X,Y,Z offsets (for animation)
 float wandX = 0, wandY = 0, wandZ = 0;
 
-//Wand rotation angle
-float wandAngle = 0;
+//Value to determine if the wand is over the hat
+float overHat = false;
+
+//Hat rotation angle offset (for animation)
+float hatAngle = 0.0;
+
+//Hat Y offset (for animation)
+float hatY = 0.0;
 
 //Global specular and shininess arrays for all objects
-float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 };
-float materialShin[] = { 50.0 };
+float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 }, materialShin[] = { 50.0 };
 
 //Position of light0
 float light0posX = 6.0, light0posY = 60.0, light0posZ = -65.0;
@@ -262,10 +267,10 @@ void drawHall()
 
     //Right roof
     glPushMatrix();
-    glTranslated(23.5, 37, -32);
+    glTranslated(23, 37, -32);
     glRotated(22, 0, 0, 1);
     glRotated(90, 0, 1, 0);
-    glScaled(60, 50, 0);
+    glScaled(60, 49, 0);
     glBegin(GL_POLYGON);
     glNormal3f(0.0, 0.0, -1.0);
     glVertex3f(0, 0, 0);
@@ -324,6 +329,32 @@ void drawHall()
     glVertex3f(1, 1, 0);
     glVertex3f(1, 0, 0);
     glEnd();
+    glPopMatrix();
+
+    //Outside color (switch GL_BACK/GL_FRONT, transformations are different)
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, sandstoneMatAmbandDif);
+    //Inside color
+    glMaterialfv(GL_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    
+    //Back wall
+    glPushMatrix();
+    glTranslatef(-13, 0.0, -92.0); 
+    glScaled(38, 38, 0);
+
+    //n rows and n columns of triangles
+    double n = 10.0;  
+    glNormal3f(0.0, -1.0, 0.0);
+    for (int r = 0; r < n; r++)  
+    {
+        glBegin(GL_TRIANGLE_STRIP);
+        for (int c = 0; c <= n; c++)
+        {
+            glVertex3f(c / n, r / n, 0.0);
+            glVertex3f(c / n, (r + 1) / n, 0.0);
+        }
+        glEnd();
+    }
+
     glPopMatrix();
 
     //Floor
@@ -512,7 +543,6 @@ void drawWand(float R, float G, float B) {
     
     glPushMatrix(); //Transformations to move all parts of the wand
     glTranslated(wandX, wandY, wandZ);
-    glRotated(wandAngle, 0, 1, 0);
 
     glColor3f(R, G, B); 
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
@@ -546,7 +576,8 @@ void drawSelectionHat(float R, float G, float B) {
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, hatShin);
     //Draw hat
     glPushMatrix();
-    glTranslated(2.5, 6, -86);
+    glTranslated(2.5, 6 + hatY, -86);
+    glRotated(hatAngle, 1, 0, 0);
     glRotated(-90, 1, 0, 0);
     glutSolidTorus(.2, .8, 25, 25);
     glutSolidCone(.8, 3.5, 25, 25);
@@ -561,7 +592,9 @@ void drawFlashlight()
     //Transformations to position the flashlighta
     glPushMatrix();
     if (nearFL) {
-       glTranslated(eyeX - flX, 3, flZ - eyeZ - 1);
+        glTranslated(eyeX, eyeY, eyeZ);
+        glRotated(eyeAngle, 0, 1, 0);
+        glTranslated(-eyeX, -eyeY, -eyeZ);
     }
     glTranslated(flX, flY, flZ);
     glRotated(180, 1, 0, 0);
@@ -609,8 +642,8 @@ void drawDoors(float R, float G, float B) {
 void animateDoorOpen(int value) {
     if (doorAngle < 90) {
         doorAngle += .5;
-        doorX += .016;
-        doorZ += .012;
+        doorX += .015;
+        doorZ += .016;
     }
     glutPostRedisplay();
 }
@@ -618,26 +651,39 @@ void animateDoorOpen(int value) {
 void animateDoorClose(int value) {
     if (doorAngle > 0) {
         doorAngle -= .5;
-        doorX -= .016;
-        doorZ -= .012;
+        doorX -= .015;
+        doorZ -= .016;
     }
     glutPostRedisplay();
 }
 
-void animateWand(int value) {
-    if (wandX > -3) {
+void animateWand(int value) 
+{
+    if (wandX > -3) 
+    {
         wandX -= .022;
     }
-    if (wandY < 4) {
+    if (wandY < 4) 
+    {
         wandY += .03;
     }
-    if (wandZ < 1) {
+    else
+    {
+        //Reaches Y limit when wand is directly over the hat 
+        //reaches Z and X limits slightly before, so overHat = true
+        //must be after the wandY if-statement
+        overHat = true;
+    }
+    if (wandZ < 1) 
+    {
         wandZ += .03;
     }
+    
     glutPostRedisplay();
 }
 
 void animateWandBack(int value) {
+    overHat = false;
     if (wandX < 0) {
         wandX += .022;
     }
@@ -646,6 +692,28 @@ void animateWandBack(int value) {
     }
     if (wandZ > 0) {
         wandZ -= .03;
+    }
+    glutPostRedisplay();
+}
+
+void animateHat(int value)
+{
+    if (hatAngle > -90) {
+        hatAngle -= .5;
+    }
+    if (hatY < 2) {
+        hatY += .01;
+    }
+    glutPostRedisplay();
+}
+
+void animateHatBack(int value)
+{
+    if (hatAngle < 0) {
+        hatAngle += .5;
+    }
+    if (hatY > 0) {
+        hatY -= .01;
     }
     glutPostRedisplay();
 }
@@ -674,7 +742,7 @@ void getID(int x, int y) {
     }
     else if ((int)pixel[0] == 0 && (int)pixel[1] == 0 && (int)pixel[2] == 255)
     {
-        itemID = WAND;
+        itemID = HAT;
         cout << "Hat selected" << endl;
     }
     else
@@ -699,6 +767,7 @@ void collision(void)
 //Draws the objects in the scene
 void drawObjects(void)
 {
+    //Color picking 
     if (isSelecting)
     {
         drawWand(1.0, 0.0, 0.0);
@@ -712,23 +781,33 @@ void drawObjects(void)
         drawSelectionHat(.2, .2, .2);
     }
 
-    if (itemID == WAND) {
+    //Animation control
+    if (itemID == WAND) 
+    {
         glutTimerFunc(.05, animateWand, 1);
     }
     else
     {
         glutTimerFunc(.05, animateWandBack, 1);
     }
-    if (itemID == DOOR) {
+    if (itemID == DOOR) 
+    {
         glutTimerFunc(.001, animateDoorOpen, 1);
     }
     else
     {
         glutTimerFunc(.001, animateDoorClose, 1);
     }
-
-
+    if (overHat)
+    {
+        glutTimerFunc(.05, animateHat, 1);
+    }
+    else
+    {
+        glutTimerFunc(.05, animateHatBack, 1);
+    }
     
+
     //Draw sphere at location of light0
     glPushMatrix();
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
@@ -745,6 +824,7 @@ void drawObjects(void)
     //Check if user is near flashlight
     collision();
 
+    //Draw objects not using color picking
     drawBridge();
     drawCourtyard();
     drawHall();
@@ -858,21 +938,24 @@ void keyInput(unsigned char key, int x, int y)
     case 'w':
         eyeX += stepSize * sin(eyeAngle * PI / 180);
         eyeZ += stepSize * cos(eyeAngle * PI / 180);
+        cout << eyeAngle << endl;
      
         glutPostRedisplay();
         break;
     case 's':
         eyeX -= stepSize * sin(eyeAngle * PI / 180);
         eyeZ -= stepSize * cos(eyeAngle * PI / 180);
-       
+        cout << eyeAngle << endl;
         glutPostRedisplay();
         break;
     case 'd':
         eyeAngle -= turnSize;
+        cout << eyeAngle << endl;
         glutPostRedisplay();
         break;
     case 'a':
         eyeAngle += turnSize;
+        cout << eyeAngle << endl;
       
         glutPostRedisplay();
         break;
