@@ -8,12 +8,18 @@
 //* 
 //* Environment: Visual Studio Community 2022
 //* 
-//* Date submitted: 
+//* Date submitted: 4/10/2022
 //* 
 //* References: None
 //* 
 //* Interactions: 
-//   
+//      Use arrow keys to move around" << endl;
+//      Press d or click the doors to open" << endl;
+//      Press L to turn on the hall light" << endl;
+//      Walk near the flashlight to pick it up" << endl;
+//      Press f to turn the flashlight on or off" << endl;
+//      Press w or click the wand to start the guessing game" << endl;
+//      Pres G, H, R, or S to select a house guess" << endl;
 //      Press esc to exit 
 //*
 //************************************************************/
@@ -40,7 +46,7 @@ int mouseX, mouseY;
 
 //Camera position values
 float eyeX = 6, eyeY = 8, eyeZ = 2;
-static float eyeAngle = 0;  //angle facing
+static float eyeAngle = 180;  //angle user is facing
 static float stepSize = 5.0;  //step size
 static float turnSize = 10.0; //degrees to turn
 
@@ -49,6 +55,25 @@ float flX = -5, flY = 5, flZ = -70;
 
 //Value to keep track of selecting state
 bool isSelecting = false;
+
+//Array of houses
+string houses[] = { "Gryffindor", "Hufflepuff", "Ravenclaw", "Slytherin"};
+
+//Instruction text
+char inst[] = "Guess a house G for Gryffindor, H for Hufflepuff, R for Ravenclaw, and S for Slytherin";
+
+//Result text
+char correct[] = "Correct! Your a wizard!";
+char incorrect[] = "Sorry you won't be a wizard :(";
+
+//Rand house number
+int randHouse = -1;
+
+//User guess
+int guess = -1;
+
+//Keeps track if an answer was submitted
+bool submitted = false;
 
 //Value to keep track of the last selected item
 int itemID = 0;
@@ -67,6 +92,9 @@ int isDoorOpen = 0;
 
 //On/off lightSwitch
 bool lightOn = false;
+
+//On/off for flashlight
+bool flOn = false;
 
 //Near flashlight value for animation (when near, animate fl to eye pos)
 bool nearFL = false;
@@ -90,7 +118,7 @@ float hatY = 0.0;
 float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 }, materialShin[] = { 50.0 };
 
 //Position of light0
-float light0posX = 6.0, light0posY = 60.0, light0posZ = -65.0;
+float light0posX = 5.5, light0posY = 40.0, light0posZ = -60.0;
 
 //Position of light1
 float light1posX = 5.5, light1posY = 6 , light1posZ = -16.5;
@@ -112,6 +140,10 @@ float hatMatAmbandDif[] = { 100.0/255.0, 85.0/255.0, 68.0/255, 1.0 };
 float blackMatAmbandDif[] = { 0, 0, 0, 1.0 };
 //Red
 float redMatAmbandDif[] = { 1.0, 0, 0, 1.0 };
+//Flame orange
+float forangeMatAmbandDif[] = { 255.0 / 255.0, 200.0 / 255.0, 35.0 / 255, 1.0 };
+//Purple
+float purpleMatAmbandDif[] = { 72.0 / 255.0, 52.0 / 255.0, 117.0 / 255.0, 1.0 };
 
 //Specular and shininess values for the hat
 float hatSpec[] = { 100.0 / 255.0, 85.0 / 255.0, 68.0 / 255, 1.0 };
@@ -125,7 +157,7 @@ float defEmiss[] = { 0.0, 0.0, 0.0, 1.0 };
 
 //--------------------------------------------------------------------------------------
 
-//Function that sets the view mode (ortho or frust)
+//Function that sets the view mode (frust)
 void setViewMode()
 {
     glMatrixMode(GL_PROJECTION);
@@ -134,7 +166,6 @@ void setViewMode()
     glMatrixMode(GL_MODELVIEW);
 }
 
-//Draws the ground 
 void drawBridge()
 {
     //Floor
@@ -342,7 +373,7 @@ void drawHall()
     glScaled(38, 38, 0);
 
     //n rows and n columns of triangles
-    double n = 10.0;  
+    double n = 100.0;  
     glNormal3f(0.0, -1.0, 0.0);
     for (int r = 0; r < n; r++)  
     {
@@ -539,6 +570,118 @@ void drawFurniture()
     glPopMatrix();
 }
 
+void drawLightFixture()
+{
+    glPushMatrix(); //Transformations for the entire light fixture
+    glTranslated(light0posX, light0posY - 5, light0posZ + 6);
+    glTranslated(0, 0, 0);
+
+    //Ceiling arm
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
+    glPushMatrix();
+    glTranslated(0, 15, -6.5);
+    glRotated(90, 0, 0, 1);
+    glScaled(20, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Arm facing north
+    glPushMatrix();
+    glTranslated(0, 2.5, -6.8);
+    glRotated(90, 0, 1, 0);
+    glScaled(3, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Light cone north
+    if (lightOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    }
+    glPushMatrix();
+    glTranslated(0, 2.5, -8.5);
+    glRotated(-90, 1, 0, 0);
+    glutSolidCone(.3, 1.5, 25, 25);
+    glPopMatrix();
+ 
+    //Arm facing east
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.3, 2.5, -6.5);
+    glScaled(3, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Light cone east
+    if (lightOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    }
+    glPushMatrix();
+    glTranslated(2, 2.5, -6.5);
+    glRotated(-90, 1, 0, 0);
+    glutSolidCone(.3, 1.5, 25, 25);
+    glPopMatrix();
+ 
+    //Arm facing south (towards initial spawn)
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
+    glPushMatrix();
+    glTranslated(0, 2.5, -6.2);
+    glRotated(-90, 0, 1, 0);
+    glScaled(3, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Light cone south
+    if (lightOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    }
+    glPushMatrix();
+    glTranslated(0, 2.5, -4.5);
+    glRotated(-90, 1, 0, 0);
+    glutSolidCone(.3, 1.5, 25, 25);
+    glPopMatrix();
+ 
+    //Arm facing west
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, darkGreyMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-.3, 2.5, -6.5);
+    glScaled(3, .1, .1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    //Light cone west
+    if (lightOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    }
+    glPushMatrix();
+    glTranslated(-2, 2.5, -6.5);
+    glRotated(-90, 1, 0, 0);
+    glutSolidCone(.3, 1.5, 25, 25);
+    glPopMatrix();
+
+    glPopMatrix();
+
+}
+
 void drawWand(float R, float G, float B) {
     
     glPushMatrix(); //Transformations to move all parts of the wand
@@ -581,30 +724,26 @@ void drawSelectionHat(float R, float G, float B) {
     glRotated(-90, 1, 0, 0);
     glutSolidTorus(.2, .8, 25, 25);
     glutSolidCone(.8, 3.5, 25, 25);
-    glPopMatrix();
-    //Reset specular and shininess values
+    //Set the shininess/specular values back to default
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShin);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, purpleMatAmbandDif);
+    glTranslated(0, 0, 3.5);
+    glScaled(.2, .25, .25);
+    glutSolidDodecahedron();
+
+    glPopMatrix();
 }
 
 void drawFlashlight()
 {
     //Transformations to position the flashlighta
     glPushMatrix();
-    if (nearFL) {
-        glTranslated(eyeX, eyeY, eyeZ);
-        glRotated(eyeAngle, 0, 1, 0);
-        glTranslated(-eyeX, -eyeY, -eyeZ);
-    }
     glTranslated(flX, flY, flZ);
-    glRotated(180, 1, 0, 0);
-   
 
     //Transformations to draw the flashlight
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
-    
     glPushMatrix();
-    glTranslated(0, 0, 0);
     glRotated(180, 0, 1, 0);
     glutSolidCone(.5, .5, 25, 25);
     glPopMatrix();
@@ -764,6 +903,48 @@ void collision(void)
     }
 }
 
+//Enable text 
+void writeStrokeString(void* font, char* string)
+{
+    char* c;
+    for (c = string; *c != '\0'; c++) glutStrokeCharacter(font, *c);
+}
+
+void generateRandHouse()
+{
+    randHouse = (rand() % 4);
+}
+
+void runGuessingGame()
+{
+    glPushMatrix();
+    glTranslatef(-9.75, 30, -90);
+    glScalef(.005, .006, .005);
+    writeStrokeString(GLUT_STROKE_ROMAN, inst);
+    glPopMatrix();
+    if (submitted == true)       
+    {
+        if (guess == randHouse)
+        {
+            glPushMatrix();
+            glTranslatef(0.5, 20, -90);
+            glScalef(.006, .006, .006);
+            writeStrokeString(GLUT_STROKE_ROMAN, correct);
+            glPopMatrix();
+            glutPostRedisplay();
+        }
+        else
+        {
+            glPushMatrix();
+            glTranslatef(-1, 20, -90);
+            glScalef(.006, .006, .006);
+            writeStrokeString(GLUT_STROKE_ROMAN, incorrect);
+            glPopMatrix();
+            glutPostRedisplay();
+        }
+    }
+}
+
 //Draws the objects in the scene
 void drawObjects(void)
 {
@@ -785,6 +966,7 @@ void drawObjects(void)
     if (itemID == WAND) 
     {
         glutTimerFunc(.05, animateWand, 1);
+        runGuessingGame();
     }
     else
     {
@@ -806,20 +988,6 @@ void drawObjects(void)
     {
         glutTimerFunc(.05, animateHatBack, 1);
     }
-    
-
-    //Draw sphere at location of light0
-    glPushMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
-    glTranslated(light0posX, light0posY, light0posZ);
-    glutSolidSphere(1, 25, 25);
-    glPopMatrix();
-
-    glPushMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
-    glTranslated(light1posX, light1posY, light1posZ);
-    glutSolidSphere(1, 25, 25);
-    glPopMatrix();
 
     //Check if user is near flashlight
     collision();
@@ -829,7 +997,25 @@ void drawObjects(void)
     drawCourtyard();
     drawHall();
     drawFurniture();
+    drawLightFixture();
+
+    glPushMatrix();
+    if (nearFL) {
+        glTranslated(eyeX, eyeY, eyeZ);
+        glRotated(eyeAngle, 0, 1, 0);
+        glTranslated(-eyeX, -eyeY, -eyeZ);
+        glTranslated(eyeX - 1 - flX, eyeY - flY - 1, eyeZ - flZ + 2);
+
+        float lightPosLight1[] = { flX, flY, flZ, 1.0 };
+        float spotDirection[] = { 0.0, 0.0, 1.0 };
+        //Define properties for light1
+
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPosLight1);
+        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
+      
+    }
     drawFlashlight();
+    glPopMatrix();
 }
 
 //Drawing routine 
@@ -872,7 +1058,7 @@ void setupLighting(void)
     glEnable(GL_NORMALIZE);
 
     //Properties for light0 (light in the hall)
-    float lightAmbLight0[] = { 0.0, 0.0, 0.0, 1.0 };
+    float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
     float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
     float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
     //Define properties for light0 
@@ -883,21 +1069,18 @@ void setupLighting(void)
     //Enable for light0 in keyboard input function
 
     //Properties for light1 
-    float lightAmbLight1[] = { 0.0, 0.0, 0.0, 1.0 };
+    float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
     float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    float lightPosLight1[] = { light1posX, light1posY, light1posZ, 1.0 };
+    static float spotAngle = 10.0;
+    static float spotExponent = 2.0;
+    //Position defined and initialized in drawFlashlight
     //Define properties for light1
-   
     glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
     glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
-    glLightfv(GL_LIGHT1, GL_POSITION, lightPosLight1);
-    //Enable light1
-    /*glEnable(GL_LIGHT1);*/
-
-    /*float spotDirection[] = { 0.0, -1.0, 0.0 };
-    static float spotAngle = 10.0;
-    static float spotExponent = 2.0;*/
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
+    //Enable for light1 in keyboard input function
 
     //Global ambient 
     float globAmb[] = { .6, .6, .6, 1.0 };
@@ -908,17 +1091,20 @@ void setupLighting(void)
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
 }
 
-// Initialization routine
+//Initialization routine
 void setup(void)
 {
     //Setup lighting
     setupLighting();
 
-    //Set world color
+    //Seed random number generator with time
+    srand(time(0));
+
+    //Set world background color
     glClearColor(72.0/255.0, 52.0/255.0, 117.0/255.0, -21.0);
 }
 
-// OpenGL window reshape routine.
+//OpenGL window reshape routine.
 void resize(int w, int h)
 {
     glViewport(0, 0, (GLsizei)w, (GLsizei)h);
@@ -935,39 +1121,24 @@ void keyInput(unsigned char key, int x, int y)
 {
     switch (key)
     {
-    case 'w':
-        eyeX += stepSize * sin(eyeAngle * PI / 180);
-        eyeZ += stepSize * cos(eyeAngle * PI / 180);
-        cout << eyeAngle << endl;
-     
+    case 'G':
+        guess = 0;
+        submitted = true;
         glutPostRedisplay();
         break;
-    case 's':
-        eyeX -= stepSize * sin(eyeAngle * PI / 180);
-        eyeZ -= stepSize * cos(eyeAngle * PI / 180);
-        cout << eyeAngle << endl;
+    case 'H':
+        guess = 1;
+        submitted = true;
         glutPostRedisplay();
         break;
-    case 'd':
-        eyeAngle -= turnSize;
-        cout << eyeAngle << endl;
+    case 'R':
+        guess = 2;
+        submitted = true;
         glutPostRedisplay();
         break;
-    case 'a':
-        eyeAngle += turnSize;
-        cout << eyeAngle << endl;
-      
-        glutPostRedisplay();
-        break;
-    case 'o':
-        if (isDoorOpen == 0)
-        {
-            isDoorOpen = 1;
-        }
-        else
-        {
-            isDoorOpen = 0;
-        }
+    case 'S':
+        guess = 3;
+        submitted = true;
         glutPostRedisplay();
         break;
     case 'L':
@@ -978,6 +1149,41 @@ void keyInput(unsigned char key, int x, int y)
         else {
             glEnable(GL_LIGHT0);
             lightOn = true;
+        }
+        glutPostRedisplay();
+        break;
+    case 'f':
+        if (flOn)
+        {
+            glDisable(GL_LIGHT1);
+            flOn = false;
+        }
+        else
+        {
+            glEnable(GL_LIGHT1);
+            flOn = true;
+        }
+        glutPostRedisplay();
+        break;
+    case 'w':
+        if (itemID == WAND)
+        {
+            itemID = 0;
+        }
+        else
+        {
+            itemID = WAND;
+        }
+        glutPostRedisplay();
+        break;
+    case 'd':
+        if (itemID == DOOR)
+        {
+            itemID = 0;
+        }
+        else
+        {
+            itemID = DOOR;
         }
         glutPostRedisplay();
         break;
@@ -994,15 +1200,23 @@ void specialkeyInput(int key, int x, int y)
 {
     switch (key)
     {
+    case GLUT_KEY_UP:
+        eyeX += stepSize * sin(eyeAngle * PI / 180);
+        eyeZ += stepSize * cos(eyeAngle * PI / 180);
+        glutPostRedisplay();
+        break;
     case GLUT_KEY_DOWN:
-        
+        eyeX -= stepSize * sin(eyeAngle * PI / 180);
+        eyeZ -= stepSize * cos(eyeAngle * PI / 180);
+        glutPostRedisplay();
         break;
     case GLUT_KEY_RIGHT:
-        
-        
+        eyeAngle -= turnSize;
+        glutPostRedisplay();
         break;
     case GLUT_KEY_LEFT:
-       
+        eyeAngle += turnSize;
+        glutPostRedisplay();
         break;
     }
 }
@@ -1028,8 +1242,15 @@ void mouseInput(int button, int state, int x, int y)
 //Routine to output interaction instructions to the C++ window
 void printInteraction(void)
 {
-    cout << "   Interaction" << endl;
-    cout << "   Press esc to exit" << endl;
+    cout << "   Interaction:" << endl;
+    cout << "       Use arrow keys to move around" << endl;
+    cout << "       Press d or click the doors to open" << endl;
+    cout << "       Press L to turn on the hall light" << endl;
+    cout << "       Walk near the flashlight to pick it up" << endl;
+    cout << "       Press f to turn the flashlight on or off" << endl;
+    cout << "       Press w or click the wand to start guessing game" << endl;
+    cout << "       Pres G, H, R, or S to select a house guess" << endl;
+    cout << "       Pres Esc to exit" << endl;
 }
 
 //Main routine
@@ -1041,6 +1262,7 @@ int main(int argc, char** argv)
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Magic Castle");
     setup();
+    generateRandHouse();
     glutDisplayFunc(drawScene);
     glutReshapeFunc(resize);
     glutKeyboardFunc(keyInput);
