@@ -8,7 +8,7 @@
 //* 
 //* Environment: Visual Studio Community 2022
 //* 
-//* Date submitted: 4/10/2022
+//* Date submitted: 4/12/2022
 //* 
 //* References: None
 //* 
@@ -1264,6 +1264,7 @@ void printInteraction(void)
     cout << "       Use arrow keys to move around" << endl;
     cout << "       Press d or click the doors to open" << endl;
     cout << "       Press L to turn on the hall light" << endl;
+    cout << "       Click > to increase and < to decrease global ambient light" << endl;
     cout << "       Walk near the flashlight to pick it up" << endl;
     cout << "       Press f to turn the flashlight on or off" << endl;
     cout << "       Press w or click the wand to start guessing game" << endl;
