@@ -13,13 +13,14 @@
 //* References: None
 //* 
 //* Interactions: 
-//      Use arrow keys to move around" << endl;
-//      Press d or click the doors to open" << endl;
-//      Press L to turn on the hall light" << endl;
-//      Walk near the flashlight to pick it up" << endl;
-//      Press f to turn the flashlight on or off" << endl;
-//      Press w or click the wand to start the guessing game" << endl;
-//      Pres G, H, R, or S to select a house guess" << endl;
+//      Use arrow keys to move around
+//      Press d or click the doors to open
+//      Press L to turn on the hall light
+//      Press > or < to increase/decrease the ambient lighting of the scene 
+//      Walk near the flashlight or click s to pick it up
+//      Press f to turn the flashlight on or off
+//      Press w or click the wand to start the guessing game
+//      Press G, H, R, or S to select a house guess
 //      Press esc to exit 
 //*
 //************************************************************/
@@ -154,6 +155,9 @@ float wandEmiss[] = { 0.9, 0.0, 0.0, 1.0 };
 
 //Default emissive values
 float defEmiss[] = { 0.0, 0.0, 0.0, 1.0 };
+
+//Global ambient values
+float gAmb = .6;
 
 //--------------------------------------------------------------------------------------
 
@@ -913,6 +917,7 @@ void writeStrokeString(void* font, char* string)
 void generateRandHouse()
 {
     randHouse = (rand() % 4);
+    cout << houses[randHouse] << endl;
 }
 
 void runGuessingGame()
@@ -943,6 +948,50 @@ void runGuessingGame()
             glutPostRedisplay();
         }
     }
+}
+
+//Setup lighting
+void setupLighting(void)
+{
+    //Main lighting setup
+    glEnable(GL_LIGHTING);
+
+    glEnable(GL_NORMALIZE);
+
+    //Global ambient 
+    float globAmb[] = { gAmb, gAmb, gAmb, 1.0 };
+
+    //Set global properties of lighting
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
+
+    //Properties for light0 (light in the hall)
+    float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
+    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
+    float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
+    //Define properties for light0 
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
+    //Enable for light0 in keyboard input function
+
+    //Properties for light1 
+    float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
+    float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
+    static float spotAngle = 10.0;
+    static float spotExponent = 2.0;
+    //Position defined and initialized in drawFlashlight
+    //Define properties for light1
+    glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
+    //Enable for light1 in keyboard input function
+
+
 }
 
 //Draws the objects in the scene
@@ -1027,6 +1076,8 @@ void drawScene(void)
     glEnable(GL_DEPTH_TEST);
     //Set camera view
     setCameraView();
+    //Setup lighting
+    setupLighting();
 
     //Set specular and shininess for all items
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
@@ -1049,54 +1100,9 @@ void drawScene(void)
     }
 }
 
-//Setup lighting
-void setupLighting(void)
-{
-    //Main lighting setup
-    glEnable(GL_LIGHTING);
-
-    glEnable(GL_NORMALIZE);
-
-    //Properties for light0 (light in the hall)
-    float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
-    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
-    float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
-    //Define properties for light0 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
-    //Enable for light0 in keyboard input function
-
-    //Properties for light1 
-    float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    static float spotAngle = 10.0;
-    static float spotExponent = 2.0;
-    //Position defined and initialized in drawFlashlight
-    //Define properties for light1
-    glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
-    //Enable for light1 in keyboard input function
-
-    //Global ambient 
-    float globAmb[] = { .6, .6, .6, 1.0 };
-
-    //Set global properties of lighting
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); //Global ambient
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
-}
-
 //Initialization routine
 void setup(void)
 {
-    //Setup lighting
-    setupLighting();
-
     //Seed random number generator with time
     srand(time(0));
 
@@ -1187,6 +1193,18 @@ void keyInput(unsigned char key, int x, int y)
         }
         glutPostRedisplay();
         break;
+    case 's':
+        nearFL = true;
+        glutPostRedisplay();
+        break;
+    case '>':
+        gAmb = gAmb + 0.1;
+        glutPostRedisplay();
+        break;
+    case '<':
+        gAmb = gAmb - 0.1;
+        glutPostRedisplay();
+        break;
     case 27:
         exit(0);
         break;
@@ -1262,13 +1280,13 @@ int main(int argc, char** argv)
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Magic Castle");
     setup();
+    printInteraction();
     generateRandHouse();
     glutDisplayFunc(drawScene);
     glutReshapeFunc(resize);
     glutKeyboardFunc(keyInput);
     glutSpecialFunc(specialkeyInput);
     glutMouseFunc(mouseInput);
-    printInteraction();
     glutMainLoop();
 
     return 0;
