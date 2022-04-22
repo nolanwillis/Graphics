@@ -259,6 +259,64 @@ void drawLightTree()
 
 }
 
+void drawCarInterior()
+{
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8, 5.1, -2.1);
+    glScaled(2, .2, .2);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-9, 5.1, -2);
+    glRotated(-10, 0, 1, 0);
+    glScaled(.2, .2, 8);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslated(-7, 5.1, -2);
+    glRotated(10, 0, 1, 0);
+    glScaled(.2, .2, 8);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    // Hood
+    glPushMatrix();
+    glTranslated(-8, 5.1, -6);
+    glScaled(.8, .2, .2);
+    glutSolidCube(1);
+    glPopMatrix();
+    
+    glPushMatrix();
+    glTranslated(-8, 5.1, -5.2);
+    glScaled(.8, .2, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslated(-8, 5.1, -4.5);
+    glScaled(1, .2, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslated(-8, 5.1, -3.5);
+    glScaled(1.2, .2, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslated(-8, 5.1, -2.5);
+    glScaled(1.4, .2, 1);
+    glutSolidCube(1);
+    glPopMatrix();
+
+
+}
+
 
 //Sets the camera viewing position
 void setCameraView() 
@@ -363,6 +421,7 @@ void drawObjects(void)
     drawStands();
     drawGrass();
     drawLightTree();
+    drawCarInterior();
 }
 
 //Drawing routine 
