@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+#include <fstream>
+
 #ifdef __APPLE__
 #  include <GLUT/glut.h>
 #else
@@ -26,6 +28,8 @@
 #endif
 
 #define PI 3.14159
+
+#define _CRT_SECURE_NO_DEPRECATE
 
 using namespace std;
 
@@ -38,9 +42,9 @@ int height, width;
 int mouseX, mouseY;
 
 //Camera position values
-float eyeX = -8, eyeY = 6.5, eyeZ = 0;
+float eyeX = -8, eyeY = 5.5, eyeZ = 0.0;
 static float eyeAngle = 180;  //angle user is facing
-static float stepSize = 5.0;  //step size
+static float stepSize = 2.0;  //step size
 static float turnSize = 10.0; //degrees to turn
 
 //Value to keep track of selecting state
@@ -56,11 +60,16 @@ float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 }, materialShin[] = { 50.0 };
 float light0posX = 5.5, light0posY = 40.0, light0posZ = -60.0;
 
 //Position of light1
-float light1posX = 5.5, light1posY = 6 , light1posZ = -16.5;
+float light1posX = 5.5, light1posY = 4 , light1posZ = -16.5;
 
-//Colored materials for lighting
+//Text for light tree
+char prestageText[] = "PRE-STAGE", stageText[] = "STAGE";
+
+//Colored materials
 //White
 float whiteMatAmbandDif[] = { 1.0, 1.0, 1.0, 1.0 };
+//Off-White
+float offwhiteMatAmbandDif[] = { .8, .8, .8, 1.0 };
 //Sky
 float skyMatAmbandDif[] = { 146.0 / 255.0, 154.0 / 255.0, 167.0 / 255.0, 1.0 };
 //Concrete
@@ -72,13 +81,13 @@ float blackMatAmbandDif[] = { 0, 0, 0, 1.0 };
 //Red
 float redMatAmbandDif[] = { 1.0, 0, 0, 1.0 };
 //Yellow
-float yellowMatAmbandDif[] = { 221.0 / 255.0, 180.0 / 255.0, 74.0 / 255, 1.0 };
+float yellowMatAmbandDif[] = { 255.0 / 255.0, 255.0 / 255.0, 0.0 / 255, 1.0 };
 //Green
 float greenMatAmbandDif[] = { 20.0 / 255.0, 200.0 / 255.0, 0.0 / 255, 1.0 };
 //Flame orange
 float forangeMatAmbandDif[] = { 255.0 / 255.0, 200.0 / 255.0, 35.0 / 255, 1.0 };
 //Rusted orange
-float rorangeMatAmbandDif[] = { 175.0 / 255.0, 104.0 / 255.0, 63.0 / 255, 1.0 };
+float rorangeMatAmbandDif[] = { 217.0 / 255.0, 48.0 / 255.0, 20.0 / 255, 1.0 };
 //Purple
 float purpleMatAmbandDif[] = { 72.0 / 255.0, 52.0 / 255.0, 117.0 / 255.0, 1.0 };
 //Blue
@@ -86,7 +95,24 @@ float blueMatAmbandDif[] = { 0.0 / 255.0, 37.0 / 255.0, 118.0 / 255.0, 1.0 };
 //Grey
 float greyMatAmbandDif[] = { .5, .5, .5, 1.0 };
 //Global ambient values
-float gAmb = 1.0;
+float gAmb = 1;
+
+//Quadric object
+GLUquadricObj* qobj;
+
+//Texture stuff
+//Texture data array
+static unsigned int texture[20];
+//BitMapFile Struct
+struct BitMapFile
+{
+    int sizeX;
+    int sizeY;
+    unsigned char* data;
+};
+
+//Boolean to keep track of cars launch status
+bool carLaunch = false;
 
 //--------------------------------------------------------------------------------------
 
@@ -99,74 +125,82 @@ void setViewMode()
     glMatrixMode(GL_MODELVIEW);
 }
 
+//Individual draw functions
 void drawAsphalt() 
 {
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, asphMatAmbandDif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
     glPushMatrix();
-    glTranslated(0, 0, -250);
+    glTranslated(0, 0, -10.0);
     glScaled(40, 1, 500);
-    glutSolidCube(1);
+    glNormal3f(0.0, 1.0, 0.0);
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(1.0, 1.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-}
 
+    
+}
 void drawGrass()
 {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
     glPushMatrix();
-    glTranslated(-70, 0, -250);
-    glScaled(100, 1, 500);
+    glTranslated(-70, 0, -500);
+    glScaled(100, 1, 1000);
     glutSolidCube(1);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslated(70, 0, -250);
-    glScaled(100, 1, 500);
+    glTranslated(70, 0, -500);
+    glScaled(100, 1, 1000);
     glutSolidCube(1);
     glPopMatrix();
 }
-
 void drawTrackBorder()
 {
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellowMatAmbandDif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, rorangeMatAmbandDif);
     glPushMatrix();
-    glTranslated(-18.5, .01, -250);
-    glScaled(3, 1, 500);
+    glTranslated(-18.5, .01, -500);
+    glScaled(3, 1, 1000);
     glutSolidCube(1);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslated(18.5, .01, -250);
-    glScaled(3, 1, 500);
+    glTranslated(18.5, .01, -500);
+    glScaled(3, 1, 1000);
     glutSolidCube(1);
     glPopMatrix();
 }
-
 void drawBarriers()
 {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
     //Left
     glPushMatrix();
-    glTranslated(-20, 2, -250);
+    glTranslated(-20, 2, -500);
     glRotated(90, 0, 0, 1);
-    glScaled(4, .75, 500);
+    glScaled(4, .75, 1000);
     glutSolidCube(1);
     glPopMatrix();
     //Center
     glPushMatrix();
-    glTranslated(0, 2, -250);
+    glTranslated(0, 2, -500);
     glRotated(90, 0, 0, 1);
-    glScaled(4, .75, 500);
+    glScaled(4, .75, 1000);
     glutSolidCube(1);
     glPopMatrix();
     //Right
     glPushMatrix();
-    glTranslated(20, 2, -250);
+    glTranslated(20, 2, -500);
     glRotated(90, 0, 0, 1);
-    glScaled(4, .75, 500);
+    glScaled(4, .75, 1000);
     glutSolidCube(1);
     glPopMatrix();
 }
-
 void drawStands()
 {
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
@@ -185,7 +219,144 @@ void drawStands()
     glutSolidCube(1);
     glPopMatrix();
 }
+void drawCarInterior()
+{
+    //Dash
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glPushMatrix();
+    glTranslated(-8.75, 3.7, -2.43);
+    glScaled(1.5, .75, .05);
+    glNormal3f(0.0, 0.0, 1.0);
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(1.0, 1.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Guages
+    //Center housing
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
+    glPushMatrix();
+    glTranslated(-8.0, 4.2, -2.43);
+    glEnable(GL_TEXTURE_2D);
+    gluCylinder(qobj, .2, .2, .075, 25, 25);
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.0, 4.2, -2.4);
+    gluDisk(qobj, 0.0, .2, 25, 25);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    //Right housing
+    glPushMatrix();
+    glTranslated(-7.6, 4.2, -2.43);
+    glEnable(GL_TEXTURE_2D);
+    gluCylinder(qobj, .1, .1, .075, 25, 25);
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-7.6, 4.2, -2.4);
+    gluDisk(qobj, 0.0, .1, 25, 25);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    //Left housing
+    glPushMatrix();
+    glTranslated(-8.4, 4.2, -2.43);
+    glEnable(GL_TEXTURE_2D);
+    gluCylinder(qobj, .1, .1, .075, 25, 25);
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.4, 4.2, -2.4);
+    gluDisk(qobj, 0.0, .1, 25, 25);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+   
 
+    // Wheel
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blueMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8, 4.1, -1.5);
+    glutSolidTorus(.05, .3, 50, 50);
+    glPopMatrix();
+    // Center support
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8, 4.27, -1.5);
+    glScaled(.075, .3, .075);
+    glutSolidCube(1);
+    glPopMatrix();
+    // Left support
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.1, 4.05, -1.5 );
+    glRotated(120, 0, 0, 1);
+    glScaled(.075, .3, .075);
+    glutSolidCube(1);
+    glPopMatrix();
+    // Right support
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-7.9, 4.05, -1.5);
+    glRotated(-120, 0, 0, 1);
+    glScaled(.075, .3, .075);
+    glutSolidCube(1);
+    glPopMatrix();
+
+
+    //Sides
+    //Left
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-9, 4.1, -2 );
+    glRotated(-10, 0, 1, 0);
+    glScaled(.2, 1, 8);
+    glutSolidCube(1);
+    glPopMatrix();
+    //Right
+    glPushMatrix();
+    glTranslated(-7, 4.1, -2);
+    glRotated(10, 0, 1, 0);
+    glScaled(.2, 1, 8);
+    glutSolidCube(1);
+    glPopMatrix();
+    
+    // Hood
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[3]);
+    glPushMatrix();
+    glTranslated(-9.0, 5.0, -3.0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0, 1.0); glVertex3f(.5, 0, -5);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, -5);
+    glTexCoord2f(0.0, 0.0); glVertex3f(1.5, 0, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+
+    // Floor
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8, 3.1, -1.7);
+    glScaled(3, .1, 3);
+    glutSolidCube(1);
+    glPopMatrix();
+
+
+
+
+}
     //Code for a fine mesh
     ////n rows and n columns of triangles
     //double n = 100.0;  
@@ -201,6 +372,12 @@ void drawStands()
     //    glEnd();
     //}
 
+//Enables text, required in drawLightTree
+void writeStrokeString(void* font, char* string)
+{
+    char* c;
+    for (c = string; *c != '\0'; c++) glutStrokeCharacter(font, *c);
+}
 void drawLightTree()
 {
     glPushMatrix(); //Transformations for the entire light fixture
@@ -229,12 +406,66 @@ void drawLightTree()
     glScaled(3, .5, .1);
     glutSolidCube(1);
     glPopMatrix();
+    //Text
+    glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glTranslatef(-1.15, 12.25, -6.1);
+    glScalef(.003, .003, .003);
+    writeStrokeString(GLUT_STROKE_ROMAN, prestageText);
+    glPopMatrix();
+    //Pre-Stage Bulbs Right
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.6, 11.8, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(1.1, 11.8, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    //Pre-Stage Bulbs Left
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-.6, 11.8, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(-1.1, 11.8, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
     //Stage Sign
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greyMatAmbandDif);
     glPushMatrix();
     glTranslated(0, 11.15, -6.2);
     glScaled(3, .5, .1);
     glutSolidCube(1);
+    glPopMatrix();
+    //Text
+    glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glTranslatef(-.7, 10.95, -6.1);
+    glScalef(.003, .003, .003);
+    writeStrokeString(GLUT_STROKE_ROMAN, stageText);
+    glPopMatrix();
+    //Stage Bulbs Right
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.6, 10.5, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(1.1, 10.5, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    //Stage Bulbs Left
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-.6, 10.5, -6.3);
+    glutSolidSphere(.2, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(-1.1, 10.5, -6.3);
+    glutSolidSphere(.2, 50, 50);
     glPopMatrix();
 
     //Right cluster
@@ -245,6 +476,30 @@ void drawLightTree()
     glScaled(1.5, 6, .5);
     glutSolidCube(1);
     glPopMatrix();
+    //Right Bulbs
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.9, 8.8, -6.9);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(.9, 7.7, -6.9);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(.9, 6.6, -6.9);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.9, 5.5, -6.9);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(.9, 4.4, -6.9);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
 
     //Left cluster
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
@@ -254,69 +509,56 @@ void drawLightTree()
     glScaled(1.5, 6, .5);
     glutSolidCube(1);
     glPopMatrix();
-
-    glPopMatrix();
-
-}
-
-void drawCarInterior()
-{
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    //Left Bulbs
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellowMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8, 5.1, -2.1);
-    glScaled(2, .2, .2);
-    glutSolidCube(1);
+    glTranslated(-1, 8.8, -6.5);
+    glutSolidSphere(.4, 50, 50);
     glPopMatrix();
-
+    glPushMatrix();
+    glTranslated(-1, 7.7, -6.5);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(-1, 6.6, -6.5);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-1, 5.5, -6.5);
+    glutSolidSphere(.4, 50, 50);
+    glPopMatrix();
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
     glPushMatrix();
-    glTranslated(-9, 5.1, -2);
-    glRotated(-10, 0, 1, 0);
-    glScaled(.2, .2, 8);
-    glutSolidCube(1);
+    glTranslated(-1, 4.4, -6.5);
+    glutSolidSphere(.4, 50, 50);
     glPopMatrix();
+   
 
-    glPushMatrix();
-    glTranslated(-7, 5.1, -2);
-    glRotated(10, 0, 1, 0);
-    glScaled(.2, .2, 8);
-    glutSolidCube(1);
-    glPopMatrix();
 
-    // Hood
-    glPushMatrix();
-    glTranslated(-8, 5.1, -6);
-    glScaled(.8, .2, .2);
-    glutSolidCube(1);
-    glPopMatrix();
-    
-    glPushMatrix();
-    glTranslated(-8, 5.1, -5.2);
-    glScaled(.8, .2, 1);
-    glutSolidCube(1);
-    glPopMatrix();
 
-    glPushMatrix();
-    glTranslated(-8, 5.1, -4.5);
-    glScaled(1, .2, 1);
-    glutSolidCube(1);
     glPopMatrix();
-
-    glPushMatrix();
-    glTranslated(-8, 5.1, -3.5);
-    glScaled(1.2, .2, 1);
-    glutSolidCube(1);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslated(-8, 5.1, -2.5);
-    glScaled(1.4, .2, 1);
-    glutSolidCube(1);
-    glPopMatrix();
-
 
 }
 
+//Individual animation functions
+//Launch car
+void animateCarLaunch(int value)
+{
+    if (eyeZ > -400) {
+        eyeZ += -6;
+    }
+}
+
+//Function that manages animation
+void animate()
+{
+    if (carLaunch)
+    {
+        glutTimerFunc(.05, animateCarLaunch, 1);
+    }
+    glutPostRedisplay();
+}
 
 //Sets the camera viewing position
 void setCameraView() 
@@ -350,20 +592,11 @@ void getID(int x, int y) {
     glutPostRedisplay();
 }
 
-//Enable text 
-void writeStrokeString(void* font, char* string)
-{
-    char* c;
-    for (c = string; *c != '\0'; c++) glutStrokeCharacter(font, *c);
-}
-
 //Setup lighting
 void setupLighting(void)
 {
     //Main lighting setup
     glEnable(GL_LIGHTING);
-
-    glEnable(GL_NORMALIZE);
 
     //Global ambient 
     float globAmb[] = { gAmb, gAmb, gAmb, 1.0 };
@@ -373,55 +606,151 @@ void setupLighting(void)
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
 
-    //Properties for light0 (light in the hall)
-    float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
-    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
-    float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
-    //Define properties for light0 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
-    //Enable for light0 in keyboard input function
+    ////Properties for light0 (light in the hall)
+    //float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
+    //float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
+    //float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
+    ////Define properties for light0 
+    //glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
+    //glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
+    //glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
+    //glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
+    ////Enable for light0 in keyboard input function
 
-    //Properties for light1 
-    float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    static float spotAngle = 10.0;
-    static float spotExponent = 2.0;
-    //Position defined and initialized in drawFlashlight
-    //Define properties for light1
-    glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
-    //Enable for light1 in keyboard input function
+    ////Properties for light1 
+    //float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
+    //float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
+    //static float spotAngle = 10.0;
+    //static float spotExponent = 2.0;
+    ////Position defined and initialized in drawFlashlight
+    ////Define properties for light1
+    //glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
+    //glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
+    //glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
+    //glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
+    //glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
+    ////Enable for light1 in keyboard input function
 
 
+}
+
+//Function to get BMP data
+BitMapFile* getBMPData(string filename)
+{
+    BitMapFile* bmp = new BitMapFile;
+    unsigned int size, offset, headerSize;
+
+    //Read input file name.
+    ifstream infile(filename.c_str(), ios::binary);
+
+    //Get the starting point of the image data.
+    infile.seekg(10);
+    infile.read((char*)&offset, 4);
+
+    //Get the header size of the bitmap.
+    infile.read((char*)&headerSize, 4);
+
+    //Get width and height values in the bitmap header.
+    infile.seekg(18);
+    infile.read((char*)&bmp->sizeX, 4);
+    infile.read((char*)&bmp->sizeY, 4);
+
+    //Allocate buffer for the image.
+    size = bmp->sizeX * bmp->sizeY * 24;
+    bmp->data = new unsigned char[size];
+
+    // Read bitmap data.
+    infile.seekg(offset);
+    infile.read((char*)bmp->data, size);
+
+    // Reverse color from bgr to rgb.
+    int temp;
+    for (int i = 0; i < size; i += 3)
+    {
+        temp = bmp->data[i];
+        bmp->data[i] = bmp->data[i + 2];
+        bmp->data[i + 2] = temp;
+    }
+
+    return bmp;
+}
+
+//Function that loads all BMP files
+void loadTextures()
+{
+    //Storage for BMP file data
+    BitMapFile* image[20];
+
+    //Textures
+    image[0] = getBMPData("Textures/carbfib.bmp");
+    image[1] = getBMPData("Textures/asphalt.bmp");
+    image[2] = getBMPData("Textures/metal.bmp");
+    image[3] = getBMPData("Textures/bluecarpaint.bmp");
+
+    //Carbon-fiber index[0].
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[0]->sizeX, image[0]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[0]->data);
+
+    //Asphalt index[1]
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[1]->sizeX, image[1]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[1]->data);
+
+    //Metal sheet index[2]
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[2]->sizeX, image[2]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[2]->data);
+
+    //Blue car paint index[3]
+    glBindTexture(GL_TEXTURE_2D, texture[3]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[3]->sizeX, image[3]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[3]->data);
 }
 
 //Draws the objects in the scene
 void drawObjects(void)
 {
-    //Color picking 
+    //Draw everything with unique colors but don't display if user isSelecting
     if (isSelecting)
     {
-      
+        //glDisable(GL_TEXTURE_2D);
+        glDisable(GL_LIGHTING);
+        getID(mouseX, mouseY);
     }
+    //Draw everything normally
     else
     {
-
+        //glEnable(GL_TEXTURE_2D);
+        glEnable(GL_LIGHTING);
+        //Draw objects not using color picking
+        drawAsphalt();
+        drawTrackBorder();
+        drawBarriers();
+        //drawStands();
+        drawGrass();
+        drawLightTree();
+        drawCarInterior();
+        glutSwapBuffers();
     }
 
-    //Draw objects not using color picking
-    drawAsphalt();
-    drawTrackBorder();
-    drawBarriers();
-    drawStands();
-    drawGrass();
-    drawLightTree();
-    drawCarInterior();
+   
 }
 
 //Drawing routine 
@@ -435,36 +764,42 @@ void drawScene(void)
     setCameraView();
     //Setup lighting
     setupLighting();
-
     //Set specular and shininess for all items
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShin);
-
-
-    //Draw everything with unique colors but don't display if user isSelecting
-    if (isSelecting)
-    {
-        glDisable(GL_LIGHTING);
-        drawObjects();
-        getID(mouseX, mouseY);
-    }
-    //Draw everything normally
-    else
-    {
-        glEnable(GL_LIGHTING);
-        drawObjects();
-        glutSwapBuffers();
-    }
+    //Draw objects in scene
+    drawObjects();
+    //Start animation
+    animate();
 }
 
 //Initialization routine
 void setup(void)
 {
+    //Set world background color
+    glClearColor(146.0 / 255.0, 154.0 / 255.0, 167.0 / 255.0, -500.0);
+
     //Seed random number generator with time
     srand(time(0));
 
-    //Set world background color
-    glClearColor(146.0 / 255.0, 154.0 / 255.0, 167.0 / 255.0, -500.0);
+    glEnable(GL_NORMALIZE);
+
+    //Enable quadrics
+    qobj = gluNewQuadric();
+    gluQuadricDrawStyle(qobj, GLU_FILL);
+    gluQuadricNormals(qobj, GLU_SMOOTH);
+    gluQuadricTexture(qobj, true);
+
+    //Textures
+    //Register texture index array.
+    glGenTextures(20, texture);
+    //Apply textures
+    loadTextures();
+
+    glEnable(GL_TEXTURE_2D);
+
+    //How textures combine with color
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 }
 
 //OpenGL window reshape routine.
@@ -484,12 +819,13 @@ void keyInput(unsigned char key, int x, int y)
 {
     switch (key)
     {
-    case '>':
-        gAmb = gAmb + 0.1;
+    case 'r':
+        carLaunch = false;
+        eyeZ = 0;
         glutPostRedisplay();
         break;
-    case '<':
-        gAmb = gAmb - 0.1;
+    case'w':
+        carLaunch = true;
         glutPostRedisplay();
         break;
     case 27:
