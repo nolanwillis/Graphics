@@ -78,6 +78,8 @@ float concreteMatAmbandDif[] = { 179.0 / 255.0, 178.0 / 255.0, 173.0 / 255.0, 1.
 float asphMatAmbandDif[] = { 49.0 / 255.0, 57.0 / 255.0, 66.0 / 255.0, 1.0 };
 //Black
 float blackMatAmbandDif[] = { 0, 0, 0, 1.0 };
+//Off-black
+float offblackMatAmbandDif[] = { 0.3, 0.3, 0.3, 1.0 };
 //Red
 float redMatAmbandDif[] = { 1.0, 0, 0, 1.0 };
 //Yellow
@@ -94,6 +96,8 @@ float purpleMatAmbandDif[] = { 72.0 / 255.0, 52.0 / 255.0, 117.0 / 255.0, 1.0 };
 float blueMatAmbandDif[] = { 0.0 / 255.0, 37.0 / 255.0, 118.0 / 255.0, 1.0 };
 //Grey
 float greyMatAmbandDif[] = { .5, .5, .5, 1.0 };
+//Glass
+float glassMatAmbandDif[] = { .8, .8, .8, .8 };
 //Global ambient values
 float gAmb = 1;
 
@@ -114,6 +118,17 @@ struct BitMapFile
 //Boolean to keep track of cars launch status
 bool carLaunch = false;
 
+//Windshield bezier surface coords
+static float bezcoords[6][4][3] =
+{
+    {{0.599999,-3.4,5}, {0.55,-2.6,5}, {0.55,-2.1,5}, {0.500001,-1.6,5}},
+    {{-1.9,-0.6,3}, {-0.25,0,3}, {0.25,0,3}, {0.400001,-0.2,3}},
+    {{-2.1,-0.5,1}, {-0.25,0,1}, {0.25,0,1}, {0.400001,-0.2,1}},
+    {{-2.1,-0.6,-1}, {-0.25,0,-1}, {0.25,0,-1}, {0.400001,0,-1}},
+    {{-1.9,-0.8,-3}, {-0.25,0,-3}, {0.25,0,-3}, {0.400001,0,-3}},
+    {{0.499999,-3.9,-5}, {0.55,-3.4,-5}, {0.55,-2.7,-5}, {0.600001,-2,-5}}
+};
+
 //--------------------------------------------------------------------------------------
 
 //Function that sets the view mode (frust)
@@ -131,75 +146,122 @@ void drawAsphalt()
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[1]);
     glPushMatrix();
-    glTranslated(0, 0, -10.0);
-    glScaled(40, 1, 500);
+    glTranslated(-20.0, 0.0, 0.0);
+    glScaled(40.0, 1.0, 1250.0);
     glNormal3f(0.0, 1.0, 0.0);
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
-    glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, -1);
-    glTexCoord2f(1.0, 1.0); glVertex3f(1, 0, -1);
-    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 50.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 50.0); glVertex3f(1, 0, 0);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-
-    
 }
 void drawGrass()
 {
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
-    glPushMatrix();
-    glTranslated(-70, 0, -500);
-    glScaled(100, 1, 1000);
-    glutSolidCube(1);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslated(70, 0, -500);
-    glScaled(100, 1, 1000);
-    glutSolidCube(1);
-    glPopMatrix();
-}
-void drawTrackBorder()
-{
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, rorangeMatAmbandDif);
-    glPushMatrix();
-    glTranslated(-18.5, .01, -500);
-    glScaled(3, 1, 1000);
-    glutSolidCube(1);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslated(18.5, .01, -500);
-    glScaled(3, 1, 1000);
-    glutSolidCube(1);
-    glPopMatrix();
-}
-void drawBarriers()
-{
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
     //Left
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[4]);
+    glEnable(GL_TEXTURE_2D);
     glPushMatrix();
-    glTranslated(-20, 2, -500);
-    glRotated(90, 0, 0, 1);
-    glScaled(4, .75, 1000);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Center
-    glPushMatrix();
-    glTranslated(0, 2, -500);
-    glRotated(90, 0, 0, 1);
-    glScaled(4, .75, 1000);
-    glutSolidCube(1);
+    glTranslated(-120.0, 0.0, 0.0);
+    glScaled(100.0, 0.0, 1250.0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(75.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(75.0, 75.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 75.0); glVertex3f(1, 0, 0);
+    glEnd();
     glPopMatrix();
     //Right
     glPushMatrix();
-    glTranslated(20, 2, -500);
+    glTranslated(20.0, 0.0, 0.0);
+    glScaled(100.0, 0.0, 1250.0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(75.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(75.0, 75.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 75.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+void drawTrackBorder()
+{
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[5]);
+    glEnable(GL_TEXTURE_2D);
+    glPushMatrix();
+    glTranslated(-20.0, .1, 0.0);
+    glScaled(3.0, 0.0, 1000.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 50.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 50.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(17.0, .1, 0.0);
+    glScaled(3.0, 0.0, 1000.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 50.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 50.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+void drawBarriers()
+{
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture[10]);
+    //Left
+    glNormal3f(1.0, 0.0, 0.0);
+    glPushMatrix();
+    glTranslated(-20, 0.0, 0.0);
     glRotated(90, 0, 0, 1);
     glScaled(4, .75, 1000);
-    glutSolidCube(1);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 1.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glEnd();
     glPopMatrix();
+    //Center
+    glNormal3f(-1.0, 0.0, 0.0);
+    glPushMatrix();
+    glTranslated(-.5, 0.0, 0.0);
+    glRotated(90, 0, 0, 1);
+    glScaled(4, .75, 1000);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 1.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    //Right
+    glNormal3f(1.0, 0.0, 0.0);
+    glPushMatrix();
+    glTranslated(20, 0.0, 0.0);
+    glRotated(90, 0, 0, 1);
+    glScaled(4, .75, 1000);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(50.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(50.0, 1.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
 }
 void drawStands()
 {
@@ -219,7 +281,7 @@ void drawStands()
     glutSolidCube(1);
     glPopMatrix();
 }
-void drawCarInterior()
+void drawCar()
 {
     //Dash
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
@@ -231,15 +293,28 @@ void drawCarInterior()
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
-    glTexCoord2f(1.0, 0.0); glVertex3f(0, 1, 0);
-    glTexCoord2f(1.0, 1.0); glVertex3f(1, 1, 0);
-    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, 0);
+    glTexCoord2f(10.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(10.0, 10.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 10.0); glVertex3f(1, 0, 0);
     glEnd();
     glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+
+    //Windscreen
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.0, 4.56, -2.8);
+    glRotated(90, 0, 1, 0);
+    glRotated(-90, 0, 0, 1);
+    glScaled(.2, .2, .146);
+    glMapGrid2d(20.0, 0.0, 1.0, 20.0, 0.0, 1.0);
+    glEvalMesh2(GL_FILL, 0, 20, 0, 20);
     glPopMatrix();
     
     //Guages
     //Center housing
+    //Outer ring
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
     glTranslated(-8.0, 4.2, -2.43);
@@ -247,40 +322,90 @@ void drawCarInterior()
     gluCylinder(qobj, .2, .2, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    //Background graphic
+    glBindTexture(GL_TEXTURE_2D, texture[7]);
     glPushMatrix();
     glTranslated(-8.0, 4.2, -2.4);
+    glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .2, 25, 25);
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    //Dot
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.0, 4.15, -2.39);
+    gluDisk(qobj, 0.0, .015, 25, 25);
+    glPopMatrix();
+    //Arrow
+    glNormal3f(0.0, 0.0, 1.0);
+    glPushMatrix();
+    glTranslated(-8.002, 4.15, -2.39);
+    glRotated(130, 0, 0, 1);
+    glScaled(.005, .12, 0.0);
+    glBegin(GL_POLYGON);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    
     //Right housing
+    //Outer ring
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
     glTranslated(-7.6, 4.2, -2.43);
     glEnable(GL_TEXTURE_2D);
     gluCylinder(qobj, .1, .1, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    //Background graphic
+    glBindTexture(GL_TEXTURE_2D, texture[8]);
     glPushMatrix();
     glTranslated(-7.6, 4.2, -2.4);
+    glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .1, 25, 25);
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    //Dot
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-7.6, 4.21, -2.39);
+    gluDisk(qobj, 0.0, .01, 25, 25);
+    glPopMatrix();
+    //Arrow
+    glNormal3f(0.0, 0.0, 1.0);
+    glPushMatrix();
+    glTranslated(-7.602, 4.205, -2.39);
+    glRotated(130, 0, 0, 1);
+    glScaled(.005, .06, 0.0);
+    glBegin(GL_POLYGON);
+    glVertex3f(0, 0, 0);
+    glVertex3f(0, 1, 0);
+    glVertex3f(1, 1, 0);
+    glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
     //Left housing
+    //Outer ring
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
     glTranslated(-8.4, 4.2, -2.43);
     glEnable(GL_TEXTURE_2D);
     gluCylinder(qobj, .1, .1, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    //Background graphic
+    glBindTexture(GL_TEXTURE_2D, texture[9]);
     glPushMatrix();
     glTranslated(-8.4, 4.2, -2.4);
+    glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .1, 25, 25);
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
    
-
     // Wheel
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blueMatAmbandDif);
     glPushMatrix();
@@ -311,51 +436,107 @@ void drawCarInterior()
     glutSolidCube(1);
     glPopMatrix();
 
-
     //Sides
     //Left
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glEnable(GL_TEXTURE_2D);
     glPushMatrix();
-    glTranslated(-9, 4.1, -2 );
-    glRotated(-10, 0, 1, 0);
-    glScaled(.2, 1, 8);
-    glutSolidCube(1);
+    glTranslated(-8.64, 3.7, -.9);
+    glRotated(90, 0, 1, 0);
+    glScaled(1.5, .75, .05);
+    glNormal3f(0.0, 0.0, 1.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(2.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(2.0, 2.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 2.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glPushMatrix();
+    glTranslated(-8.74, 4.45, -2.4);
+    glRotated(90, 1, 0, 0);
+    glScaled(.1, 1.75, 0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(2.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(2.0, 2.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 2.0); glVertex3f(1, 0, 0);
+    glEnd();
     glPopMatrix();
     //Right
     glPushMatrix();
-    glTranslated(-7, 4.1, -2);
-    glRotated(10, 0, 1, 0);
-    glScaled(.2, 1, 8);
-    glutSolidCube(1);
+    glTranslated(-7.35, 3.7, -.9);
+    glRotated(90, 0, 1, 0);
+    glScaled(1.5, .75, .05);
+    glNormal3f(0.0, 0.0, 1.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(2.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(2.0, 2.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 2.0); glVertex3f(1, 0, 0);
+    glEnd();
     glPopMatrix();
-    
-    // Hood
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-7.36, 4.45, -2.4);
+    glRotated(90, 1, 0, 0);
+    glScaled(.1, 1.75, 0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(2.0, 0.0); glVertex3f(0, 1, 0);
+    glTexCoord2f(2.0, 2.0); glVertex3f(1, 1, 0);
+    glTexCoord2f(0.0, 2.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glPopMatrix();
+    glDisable(GL_TEXTURE);
+   
+    //Hood
     glBindTexture(GL_TEXTURE_2D, texture[3]);
     glPushMatrix();
-    glTranslated(-9.0, 5.0, -3.0);
+    glTranslated(-8.8, 4.45, -2.41);
     glNormal3f(0.0, 1.0, 0.0);
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_POLYGON);
-    glTexCoord2f(1.0, 0.0); glVertex3f(0, 0, 0);
-    glTexCoord2f(1.0, 1.0); glVertex3f(.5, 0, -5);
-    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, -5);
-    glTexCoord2f(0.0, 0.0); glVertex3f(1.5, 0, 0);
+    glTexCoord2f(1.0, 0.0); glVertex3f(0.053, 0, 0);
+    glTexCoord2f(1.0, 1.0); glVertex3f(.5, 0, -7);
+    glTexCoord2f(0.0, 1.0); glVertex3f(1, 0, -7);
+    glTexCoord2f(0.0, 0.0); glVertex3f(1.545, 0, 0);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
-    // Floor
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
+    //Floor
+    glBindTexture(GL_TEXTURE_2D, texture[6]);
     glPushMatrix();
-    glTranslated(-8, 3.1, -1.7);
-    glScaled(3, .1, 3);
-    glutSolidCube(1);
+    glTranslated(-10.2, .6, -4.0);
+    glScaled(4.5, 0.0, 4.0);
+    glNormal3f(0.0, 1.0, 0.0);
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_POLYGON);
+    glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
+    glTexCoord2f(5.0, 0.0); glVertex3f(0, 0, -1);
+    glTexCoord2f(5.0, 5.0); glVertex3f(1, 0, -1);
+    glTexCoord2f(0.0, 5.0); glVertex3f(1, 0, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
-
-
-
+    //Wheels
+    //Left
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offblackMatAmbandDif);
+    glPushMatrix();
+    glTranslated(-8.5, 4.4, -8.8);
+    glRotated(90, 0, 1, 0);
+    glutSolidTorus(.1, .3, 50, 50);
+    glPopMatrix();
+    //Right
+    glPushMatrix();
+    glTranslated(-7.6, 4.4, -8.8);
+    glRotated(90, 0, 1, 0);
+    glutSolidTorus(.1, .3, 50, 50);
+    glPopMatrix();
 }
     //Code for a fine mesh
     ////n rows and n columns of triangles
@@ -534,19 +715,15 @@ void drawLightTree()
     glutSolidSphere(.4, 50, 50);
     glPopMatrix();
    
-
-
-
     glPopMatrix();
-
 }
 
 //Individual animation functions
 //Launch car
 void animateCarLaunch(int value)
 {
-    if (eyeZ > -400) {
-        eyeZ += -6;
+    if (eyeZ > -950) {
+        eyeZ += -5;
     }
 }
 
@@ -682,10 +859,17 @@ void loadTextures()
     BitMapFile* image[20];
 
     //Textures
-    image[0] = getBMPData("Textures/carbfib.bmp");
+    image[0] = getBMPData("Textures/carbfib2.bmp");
     image[1] = getBMPData("Textures/asphalt.bmp");
     image[2] = getBMPData("Textures/metal.bmp");
     image[3] = getBMPData("Textures/bluecarpaint.bmp");
+    image[4] = getBMPData("Textures/grass.bmp");
+    image[5] = getBMPData("Textures/redrubber.bmp");
+    image[6] = getBMPData("Textures/hatchedmetalsheet.bmp");
+    image[7] = getBMPData("Textures/speedometer.bmp");
+    image[8] = getBMPData("Textures/tachometer.bmp");
+    image[9] = getBMPData("Textures/fuel.bmp");
+    image[10] = getBMPData("Textures/concrete.bmp");
 
     //Carbon-fiber index[0].
     glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -722,6 +906,69 @@ void loadTextures()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[3]->sizeX, image[3]->sizeY, 0,
         GL_RGB, GL_UNSIGNED_BYTE, image[3]->data);
+
+    //Grass index[4]
+    glBindTexture(GL_TEXTURE_2D, texture[4]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[4]->sizeX, image[4]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[4]->data);
+
+    //Red-rubber index[5]
+    glBindTexture(GL_TEXTURE_2D, texture[5]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[5]->sizeX, image[5]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[5]->data);
+
+    //Hatched metal sheet index[6]
+    glBindTexture(GL_TEXTURE_2D, texture[6]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[6]->sizeX, image[6]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[6]->data);
+
+    //Speedometer index[7]
+    glBindTexture(GL_TEXTURE_2D, texture[7]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[7]->sizeX, image[7]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[7]->data);
+
+    //Tachometer index[8]
+    glBindTexture(GL_TEXTURE_2D, texture[8]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[8]->sizeX, image[8]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[8]->data);
+
+    //Fuel index[9]
+    glBindTexture(GL_TEXTURE_2D, texture[9]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[9]->sizeX, image[9]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[9]->data);
+
+    //Concrete index[10]
+    glBindTexture(GL_TEXTURE_2D, texture[10]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[10]->sizeX, image[10]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[10]->data);
 }
 
 //Draws the objects in the scene
@@ -746,7 +993,7 @@ void drawObjects(void)
         //drawStands();
         drawGrass();
         drawLightTree();
-        drawCarInterior();
+        drawCar();
         glutSwapBuffers();
     }
 
@@ -790,16 +1037,22 @@ void setup(void)
     gluQuadricNormals(qobj, GLU_SMOOTH);
     gluQuadricTexture(qobj, true);
 
-    //Textures
+    //Enable Textures
     //Register texture index array.
     glGenTextures(20, texture);
     //Apply textures
     loadTextures();
-
-    glEnable(GL_TEXTURE_2D);
-
     //How textures combine with color
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+    //Enable bezier surfaces
+    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 6, bezcoords[0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+
+    //Enable blending
+    glEnable(GL_BLEND);
+    //Blending properties
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 //OpenGL window reshape routine.
@@ -867,15 +1120,16 @@ void mouseInput(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT && state == GLUT_DOWN)
     {
-        isSelecting = true;
+      /*  isSelecting = true;
         mouseX = x;
-        mouseY = height - y;
+        mouseY = height - y;*/
+        eyeY -= .5;
         glutPostRedisplay();
     }
 
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
-        
+        eyeY += .5;
         glutPostRedisplay();
     }
 }
