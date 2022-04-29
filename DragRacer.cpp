@@ -50,17 +50,14 @@ static float turnSize = 10.0; //degrees to turn
 //Value to keep track of selecting state
 bool isSelecting = false;
 
-//Value to keep track of the last selected item
+//Default selection ID
 int itemID = 0;
+
+//Selection ID for ignition button
+int IGNID = 1;
 
 //Global specular and shininess arrays for all objects
 float materialSpec[] = { 1.0, 1.0, 1.0, 1.0 }, materialShin[] = { 50.0 };
-
-//Position of light0
-float light0posX = 5.5, light0posY = 40.0, light0posZ = -60.0;
-
-//Position of light1
-float light1posX = 5.5, light1posY = 4 , light1posZ = -16.5;
 
 //Text for light tree
 char prestageText[] = "PRE-STAGE", stageText[] = "STAGE";
@@ -99,7 +96,7 @@ float greyMatAmbandDif[] = { .5, .5, .5, 1.0 };
 //Glass
 float glassMatAmbandDif[] = { .8, .8, .8, .8 };
 //Global ambient values
-float gAmb = 1;
+float gAmb = 1.0;
 
 //Quadric object
 GLUquadricObj* qobj;
@@ -115,9 +112,6 @@ struct BitMapFile
     unsigned char* data;
 };
 
-//Boolean to keep track of cars launch status
-bool carLaunch = false;
-
 //Windshield bezier surface coords
 static float bezcoords[6][4][3] =
 {
@@ -128,6 +122,26 @@ static float bezcoords[6][4][3] =
     {{-1.9,-0.8,-3}, {-0.25,0,-3}, {0.25,0,-3}, {0.400001,0,-3}},
     {{0.499999,-3.9,-5}, {0.55,-3.4,-5}, {0.55,-2.7,-5}, {0.600001,-2,-5}}
 };
+
+//Boolean to keep track of cars launch status
+bool carLaunch = false;
+
+//Boolean to keep track of race start status
+bool carStart = false;
+
+//Boolean value that determines tracklight status
+bool TLOn = false;
+
+//Boolean value to keep track of time (day/night)
+bool isDay = true;
+
+//Speedometer animation values
+float speedX = 0, speedY = 0;
+float speedRot = 0;
+
+//Tachometer animation values
+float tachX = 0, tachY = 0;
+float tachRot = 0;
 
 //--------------------------------------------------------------------------------------
 
@@ -148,7 +162,7 @@ void drawAsphalt()
     glPushMatrix();
     glTranslated(-20.0, 0.0, 0.0);
     glScaled(40.0, 1.0, 1250.0);
-    glNormal3f(0.0, 1.0, 0.0);
+    glNormal3f(0.0, -1.0, 0.0);
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
@@ -168,7 +182,7 @@ void drawGrass()
     glPushMatrix();
     glTranslated(-120.0, 0.0, 0.0);
     glScaled(100.0, 0.0, 1250.0);
-    glNormal3f(0.0, 1.0, 0.0);
+    glNormal3f(0.0, -1.0, 0.0);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
     glTexCoord2f(75.0, 0.0); glVertex3f(0, 0, -1);
@@ -180,7 +194,7 @@ void drawGrass()
     glPushMatrix();
     glTranslated(20.0, 0.0, 0.0);
     glScaled(100.0, 0.0, 1250.0);
-    glNormal3f(0.0, 1.0, 0.0);
+    glNormal3f(0.0, -1.0, 0.0);
     glBegin(GL_POLYGON);
     glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0);
     glTexCoord2f(75.0, 0.0); glVertex3f(0, 0, -1);
@@ -195,6 +209,7 @@ void drawTrackBorder()
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[5]);
     glEnable(GL_TEXTURE_2D);
+    glNormal3f(0.0, -1.0, 0.0);
     glPushMatrix();
     glTranslated(-20.0, .1, 0.0);
     glScaled(3.0, 0.0, 1000.0);
@@ -281,7 +296,7 @@ void drawStands()
     glutSolidCube(1);
     glPopMatrix();
 }
-void drawCar()
+void drawCar(float R, float G, float B)
 {
     //Dash
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
@@ -309,6 +324,15 @@ void drawCar()
     glScaled(.2, .2, .146);
     glMapGrid2d(20.0, 0.0, 1.0, 20.0, 0.0, 1.0);
     glEvalMesh2(GL_FILL, 0, 20, 0, 20);
+    glPopMatrix();
+
+    //Power button
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    glColor3f(R, G, B);
+    glPushMatrix();
+    glTranslated(-7.6, 3.94, -2.4);
+    glScaled(.08, .08, .03);
+    glutSolidCube(1);
     glPopMatrix();
     
     //Guages
@@ -339,7 +363,8 @@ void drawCar()
     //Arrow
     glNormal3f(0.0, 0.0, 1.0);
     glPushMatrix();
-    glTranslated(-8.002, 4.15, -2.39);
+    glTranslated(-8.002 + speedX, 4.15 + speedY, -2.39);
+    glRotated(speedRot, 0, 0, 1);
     glRotated(130, 0, 0, 1);
     glScaled(.005, .12, 0.0);
     glBegin(GL_POLYGON);
@@ -377,7 +402,8 @@ void drawCar()
     //Arrow
     glNormal3f(0.0, 0.0, 1.0);
     glPushMatrix();
-    glTranslated(-7.602, 4.205, -2.39);
+    glTranslated(-7.602 + tachX, 4.205 + tachY, -2.39);
+    glRotated(tachRot, 0, 0, 1);
     glRotated(130, 0, 0, 1);
     glScaled(.005, .06, 0.0);
     glBegin(GL_POLYGON);
@@ -538,20 +564,83 @@ void drawCar()
     glutSolidTorus(.1, .3, 50, 50);
     glPopMatrix();
 }
-    //Code for a fine mesh
-    ////n rows and n columns of triangles
-    //double n = 100.0;  
-    //glNormal3f(0.0, -1.0, 0.0);
-    //for (int r = 0; r < n; r++)  
-    //{
-    //    glBegin(GL_TRIANGLE_STRIP);
-    //    for (int c = 0; c <= n; c++)
-    //    {
-    //        glVertex3f(c / n, r / n, 0.0);
-    //        glVertex3f(c / n, (r + 1) / n, 0.0);
-    //    }
-    //    glEnd();
-    //}
+void drawTrackLights()
+{
+    //Left poles
+    for (int i = 0; i < 10; i++)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greyMatAmbandDif);
+        glPushMatrix();
+        glTranslated(-21, 18, -15 - (i * 100));
+        glRotated(90, 1, 0, 0);
+        gluCylinder(qobj, .2, .2, 18, 25, 25);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(-21.1, 18, -15 - (i * 100));
+        glRotated(8, 0, 0, 1);
+        glRotated(90, 0, 1, 0);
+        gluCylinder(qobj, .2, .15, 10, 25, 25);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(-10.5, 19.5, -15 - (i * 100));
+        glRotated(8, 0, 0, 1);
+        glScaled(2, .2, .5);
+        glutSolidCube(1);
+        glPopMatrix();
+        if (TLOn)
+        {
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+        }
+        else
+        {
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+        }
+        glPushMatrix();
+        glTranslated(-10.5, 19.4, -15 - (i * 100));
+        glRotated(8, 0, 0, 1);
+        glScaled(1, .2, .25);
+        glutSolidCube(1);
+        glPopMatrix();
+    }
+
+    //Right poles
+    for (int i = 0; i < 10; i++)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greyMatAmbandDif);
+        glPushMatrix();
+        glTranslated(21, 18, -15 - (i * 100));
+        glRotated(90, 1, 0, 0);
+        gluCylinder(qobj, .2, .2, 18, 25, 25);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(21.1, 18, -15 - (i * 100));
+        glRotated(-8, 0, 0, 1);
+        glRotated(-90, 0, 1, 0);
+        gluCylinder(qobj, .2, .15, 10, 25, 25);
+        glPopMatrix();
+        glPushMatrix();
+        glTranslated(10.5, 19.5, -15 - (i * 100));
+        glRotated(-8, 0, 0, 1);
+        glScaled(2, .2, .5);
+        glutSolidCube(1);
+        glPopMatrix();
+        if (TLOn)
+        {
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+        }
+        else
+        {
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+        }
+        glPushMatrix();
+        glTranslated(10.5, 19.4, -15 - (i * 100));
+        glRotated(-8, 0, 0, 1);
+        glScaled(1, .2, .25);
+        glutSolidCube(1);
+        glPopMatrix();
+    }
+    
+}
 
 //Enables text, required in drawLightTree
 void writeStrokeString(void* font, char* string)
@@ -722,8 +811,69 @@ void drawLightTree()
 //Launch car
 void animateCarLaunch(int value)
 {
-    if (eyeZ > -950) {
+    if (eyeZ > -950) 
+    {
         eyeZ += -5;
+    }
+}
+
+void animateSpeedometer(int value)
+{
+    if (speedRot > -230)
+    {
+        speedRot -= .5;
+        speedX += .000025;
+        speedY += .00001;
+    }
+}
+
+void animateTachometer(int value)
+{
+    if (tachRot > -190)
+    {
+        tachRot -= 1;
+        tachX += .000025;
+        tachY += .000025;
+    }  
+}
+
+void animateTachometerIdle(int value)
+{
+    if (tachRot > -10)
+    {
+        tachRot -= .25;
+        tachX += .000025;
+        tachY += .000025;
+    }
+}
+
+void animateSpeedometerDec(int value)
+{
+    if (speedRot < 0)
+    {
+        speedRot += .5;
+        speedX -= .000025;
+        speedY -= .00001;
+    }
+}
+
+void animateTachometerDec(int value)
+{
+    if (tachRot < 0)
+    {
+        tachRot += 1;
+        tachX -= .000025;
+        tachY -= .00005;
+    }
+}
+
+void animateTachometerIdleDec(int value)
+{
+    if (tachRot < -10)
+    {
+        tachRot += 1;
+        tachX -= .000025;
+        tachY -= .000025;
     }
 }
 
@@ -732,8 +882,25 @@ void animate()
 {
     if (carLaunch)
     {
-        glutTimerFunc(.05, animateCarLaunch, 1);
+        /*glutTimerFunc(.05, animateCarLaunch, 1);*/
+        glutTimerFunc(.02, animateSpeedometer, 1);
+        glutTimerFunc(.02, animateTachometer, 1);
     }
+    else
+    {
+        glutTimerFunc(.02, animateSpeedometerDec, 1);
+        glutTimerFunc(.02, animateTachometerIdleDec, 1);
+    }
+    
+    if (carStart)
+    {
+        glutTimerFunc(.02, animateTachometerIdle, 1);
+    }
+    else
+    {
+        glutTimerFunc(.02, animateTachometerDec, 1);
+    }
+
     glutPostRedisplay();
 }
 
@@ -749,17 +916,9 @@ void setCameraView()
 void getID(int x, int y) {
     unsigned char pixel[3];
     glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-    if ((int)pixel[0] == 0 && (int)pixel[1] == 255 && (int)pixel[2] == 0)
+    if ((int)pixel[0] == 0 && (int)pixel[1] == 0 && (int)pixel[2] == 255)
     {
-        
-    }
-    else if ((int)pixel[0] == 255 && (int)pixel[1] == 0 && (int)pixel[2] == 0)
-    {
-        
-    }
-    else if ((int)pixel[0] == 0 && (int)pixel[1] == 0 && (int)pixel[2] == 255)
-    {
-       
+        itemID = IGNID; 
     }
     else
     {
@@ -772,43 +931,70 @@ void getID(int x, int y) {
 //Setup lighting
 void setupLighting(void)
 {
-    //Main lighting setup
-    glEnable(GL_LIGHTING);
+    //Properties for track lights
+    float lightAmbLight0[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
+    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
+    static float spotAngle = 20.0;
+    static float spotExponent = 2.0;
+    //Define properties for light0 
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent);
+    glEnable(GL_LIGHT0);
+  
+   
+}
 
-    //Global ambient 
-    float globAmb[] = { gAmb, gAmb, gAmb, 1.0 };
+//Menu
+//Menu controllers
+void frontMenu(int value)
+{
+    glutPostRedisplay();
+}
+void timeMenu(int value)
+{
+    if (value == 1) {
+        gAmb = 1;
+        isDay = true;
+    }
+    if (value == 2) {
+        gAmb = .3;
+        isDay = false;
+    }
+    glutPostRedisplay();
+}
+// Controller for moon menu (small/medium/large moon size)
+void lightsMenu(int value)
+{
+    if (value == 1) {
+        TLOn = true;
+    }
+    if (value == 2) {
+        TLOn = false;
+    }
+    glutPostRedisplay();
+}
+//Main menu function
+void drawPopupMenu(void)
+{
+    int timeSubMenu;
+    timeSubMenu = glutCreateMenu(timeMenu);
+    glutAddMenuEntry("Day", 1);
+    glutAddMenuEntry("Night", 2);
 
-    //Set global properties of lighting
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
+    int lightsSubMenu;
+    lightsSubMenu = glutCreateMenu(lightsMenu);
+    glutAddMenuEntry("On", 1);
+    glutAddMenuEntry("Off", 2);
 
-    ////Properties for light0 (light in the hall)
-    //float lightAmbLight0[] = { 50.0 / 255.0, 25.0 / 255.0, 0.0 / 255.0, 1.0 };
-    //float lightDifAndSpecLight0[] = { 255.0 / 255.0, 119.0 / 255.0, 0.0 / 255.0, .2 };
-    //float lightPosLight0[] = { light0posX, light0posY, light0posZ, 1.0 };
-    ////Define properties for light0 
-    //glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
-    //glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
-    //glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
-    //glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
-    ////Enable for light0 in keyboard input function
-
-    ////Properties for light1 
-    //float lightAmbLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    //float lightDifAndSpecLight1[] = { 1.0, 1.0, 1.0, 1.0 };
-    //static float spotAngle = 10.0;
-    //static float spotExponent = 2.0;
-    ////Position defined and initialized in drawFlashlight
-    ////Define properties for light1
-    //glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight1);
-    //glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight1);
-    //glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight1);
-    //glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
-    //glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
-    ////Enable for light1 in keyboard input function
-
-
+    glutCreateMenu(frontMenu);
+    glutAddSubMenu("Time", timeSubMenu);
+    glutAddSubMenu("Track Lights", lightsSubMenu);
+   
+    // The menu is triggered by the right mouse button.
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 //Function to get BMP data
@@ -974,14 +1160,14 @@ void loadTextures()
 //Draws the objects in the scene
 void drawObjects(void)
 {
-    //Draw everything with unique colors but don't display if user isSelecting
+    //Draw everything with unique colors but don't display, if user isSelecting
     if (isSelecting)
     {
-        //glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
+        drawCar(0.0, 0.0, 1.0);
         getID(mouseX, mouseY);
     }
-    //Draw everything normally
+    //Draw everything normally otherwise
     else
     {
         //glEnable(GL_TEXTURE_2D);
@@ -989,33 +1175,76 @@ void drawObjects(void)
         //Draw objects not using color picking
         drawAsphalt();
         drawTrackBorder();
+        drawTrackLights();
         drawBarriers();
-        //drawStands();
         drawGrass();
         drawLightTree();
-        drawCar();
+        drawCar(1.0, 0.0, 0.0);
         glutSwapBuffers();
     }
 
-   
+    //Selection handler
+    if (itemID == IGNID)
+    {
+        if (!carStart)
+        {
+            carStart = true;
+            itemID = 0;
+            cout << "   Engine started!" << endl;
+        }
+        else
+        {
+            carStart = false;
+            carLaunch = false;
+            itemID = 0;
+            cout << "   Engine off" << endl;
+        }
+    }
 }
 
-//Drawing routine 
+//Main drawing routine 
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
     //Enable depth testing
     glEnable(GL_DEPTH_TEST);
+    
     //Set camera view
     setCameraView();
-    //Setup lighting
+    
+    //Enable lighting
+    //Global ambient 
+    float globAmb[] = { gAmb, gAmb, gAmb, 1.0 };
+    //Set global properties of lighting
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE); //Enable 2 sided lighting
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
+
+    //Spotlight direction for track lights
+    /*glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, spotDirection);
+    glLightfv(GL_LIGHT7, GL_SPOT_DIRECTION, spotDirection);*/
     setupLighting();
+    
+    //Set position of individual lights
+    float lightPosLight0[] = { -10.5, 5, -15, 1.0 };
+    float spotDirection[] = { 0.0, -1.0, 0.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spotDirection);
+    
     //Set specular and shininess for all items
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialShin);
+    
     //Draw objects in scene
     drawObjects();
+    
     //Start animation
     animate();
 }
@@ -1053,6 +1282,9 @@ void setup(void)
     glEnable(GL_BLEND);
     //Blending properties
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //Enable popup menu
+    drawPopupMenu();
 }
 
 //OpenGL window reshape routine.
@@ -1078,7 +1310,14 @@ void keyInput(unsigned char key, int x, int y)
         glutPostRedisplay();
         break;
     case'w':
-        carLaunch = true;
+        if (!carLaunch && carStart)
+        {
+            carLaunch = true;
+        }
+        else
+        {
+            carLaunch = false;
+        }
         glutPostRedisplay();
         break;
     case 27:
@@ -1120,16 +1359,9 @@ void mouseInput(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT && state == GLUT_DOWN)
     {
-      /*  isSelecting = true;
+        isSelecting = true;
         mouseX = x;
-        mouseY = height - y;*/
-        eyeY -= .5;
-        glutPostRedisplay();
-    }
-
-    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
-    {
-        eyeY += .5;
+        mouseY = height - y;
         glutPostRedisplay();
     }
 }
