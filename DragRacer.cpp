@@ -1,21 +1,39 @@
-///***********************************************************
-//*
-//* Name: Nolan Willis
-//*
-//* Email: nwillis@syr.edu    
-//*
-//* Assignment: Final Project
-//* 
-//* Environment: Visual Studio Community 2022
-//* 
-//* Date submitted: 
-//* 
-//* References: None
-//* 
-//* Interactions: 
-//      Press esc to exit 
-//*
-//************************************************************/
+//***********************************************************
+//
+// Name: Nolan Willis
+//
+// Email: nwillis@syr.edu    
+//
+// Assignment: Final Project
+// 
+// Environment: Visual Studio Community 2022
+// 
+// Date submitted: 
+// 
+// References: 
+//      carbfib2.bmp, https://www.istockphoto.com/vector/carbon-fiber-seamless-gm94297564-5777029
+//      asphalt.bmp, https://besthqwallpapers.com/textures/4k-black-asphalt-background-black-stones-grunge-backgrounds-black-asphalt-157883
+//      metal.bmp, https://www.istockphoto.com/photo/abstract-background-reflection-rough-chrome-metal-texture-gm1130707008-299132827
+//      bluecarpaint.bmp, https://www.dreamstime.com/blue-metal-texture-background-abstract-car-paint-closeup-surface-image105117147
+//      grass.bmp, https://www.dreamstime.com/green-grass-seamless-texture-horizontal-dimension-pattern-artificial-background-image139188173
+//      redrubber.bmp, https://www.dreamstime.com/royalty-free-stock-photos-texture-rubber-floor-image29314538
+//      hatchedmetalsheet.bmp, https://www.istockphoto.com/vector/chrome-metal-texture-seamless-pattern-gm455454685-16170757
+//      speedometer.bmp, https://similarpng.com/blue-speedometer-on-transparent-background-png/
+//      tachometer.bmp, https://www.istockphoto.com/vector/tachometer-scale-on-black-background-gm930865710-255180065
+//      fuel.bmp, http://clipart-library.com/cliparts-gas-gauge.html
+//      concrete.bmp, https://naldzgraphics.net/free-seamless-concrete-textures/
+//      sky.bmp, https://www.pinterest.com/pin/476114991835021544/
+//      nightsky.bmp, https://t4.ftcdn.net/jpg/01/22/75/13/360_F_122751395_Vx1WnUVBTV2VgMAwWYbaukDlEEFSwqyI.jpg
+// 
+// Interactions: 
+//      Press the arrow keys to move around in the scene.
+//      Left click the red button to start the car.
+//      Press w to launch the car down the track.
+//      Press r to reset the scene.
+//      Right click the scene to access the menu.
+//      Press ESC to exit the scene
+//
+//************************************************************
 
 #include <iostream>
 
@@ -135,6 +153,9 @@ bool TLOn = false;
 //Boolean value to keep track of time (day/night)
 bool isDay = true;
 
+//Boolean value to keep track of light tree status
+bool LeftTreeOn = false, RightTreeOn = false;
+
 //Speedometer animation values
 float speedX = 0, speedY = 0;
 float speedRot = 0;
@@ -157,7 +178,7 @@ void setViewMode()
 //Individual draw functions
 void drawAsphalt() 
 {
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[1]);
     glPushMatrix();
     glTranslated(-20.0, 0.0, 0.0);
@@ -302,7 +323,7 @@ void drawCar(float R, float G, float B)
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[0]);
     glPushMatrix();
-    glTranslated(-8.75, 3.7, -2.43);
+    glTranslated(-8.75, 3.7, -2.43 + eyeZ);
     glScaled(1.5, .75, .05);
     glNormal3f(0.0, 0.0, 1.0);
     glEnable(GL_TEXTURE_2D);
@@ -318,7 +339,7 @@ void drawCar(float R, float G, float B)
     //Windscreen
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8.0, 4.56, -2.8);
+    glTranslated(-8.0, 4.56, -2.8 + eyeZ);
     glRotated(90, 0, 1, 0);
     glRotated(-90, 0, 0, 1);
     glScaled(.2, .2, .146);
@@ -330,7 +351,7 @@ void drawCar(float R, float G, float B)
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
     glColor3f(R, G, B);
     glPushMatrix();
-    glTranslated(-7.6, 3.94, -2.4);
+    glTranslated(-7.6, 3.94, -2.4 + eyeZ);
     glScaled(.08, .08, .03);
     glutSolidCube(1);
     glPopMatrix();
@@ -341,7 +362,7 @@ void drawCar(float R, float G, float B)
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
-    glTranslated(-8.0, 4.2, -2.43);
+    glTranslated(-8.0, 4.2, -2.43 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluCylinder(qobj, .2, .2, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -349,7 +370,7 @@ void drawCar(float R, float G, float B)
     //Background graphic
     glBindTexture(GL_TEXTURE_2D, texture[7]);
     glPushMatrix();
-    glTranslated(-8.0, 4.2, -2.4);
+    glTranslated(-8.0, 4.2, -2.4 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .2, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -357,13 +378,13 @@ void drawCar(float R, float G, float B)
     //Dot
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8.0, 4.15, -2.39);
+    glTranslated(-8.0, 4.15, -2.39 + eyeZ);
     gluDisk(qobj, 0.0, .015, 25, 25);
     glPopMatrix();
     //Arrow
     glNormal3f(0.0, 0.0, 1.0);
     glPushMatrix();
-    glTranslated(-8.002 + speedX, 4.15 + speedY, -2.39);
+    glTranslated(-8.002 + speedX, 4.15 + speedY, -2.39 + eyeZ);
     glRotated(speedRot, 0, 0, 1);
     glRotated(130, 0, 0, 1);
     glScaled(.005, .12, 0.0);
@@ -380,7 +401,7 @@ void drawCar(float R, float G, float B)
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
-    glTranslated(-7.6, 4.2, -2.43);
+    glTranslated(-7.6, 4.2, -2.43 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluCylinder(qobj, .1, .1, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -388,7 +409,7 @@ void drawCar(float R, float G, float B)
     //Background graphic
     glBindTexture(GL_TEXTURE_2D, texture[8]);
     glPushMatrix();
-    glTranslated(-7.6, 4.2, -2.4);
+    glTranslated(-7.6, 4.2, -2.4 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .1, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -396,13 +417,13 @@ void drawCar(float R, float G, float B)
     //Dot
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
     glPushMatrix();
-    glTranslated(-7.6, 4.21, -2.39);
+    glTranslated(-7.6, 4.21, -2.39 + eyeZ);
     gluDisk(qobj, 0.0, .01, 25, 25);
     glPopMatrix();
     //Arrow
     glNormal3f(0.0, 0.0, 1.0);
     glPushMatrix();
-    glTranslated(-7.602 + tachX, 4.205 + tachY, -2.39);
+    glTranslated(-7.602 + tachX, 4.205 + tachY, -2.39 + eyeZ);
     glRotated(tachRot, 0, 0, 1);
     glRotated(130, 0, 0, 1);
     glScaled(.005, .06, 0.0);
@@ -418,7 +439,7 @@ void drawCar(float R, float G, float B)
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
     glBindTexture(GL_TEXTURE_2D, texture[2]);
     glPushMatrix();
-    glTranslated(-8.4, 4.2, -2.43);
+    glTranslated(-8.4, 4.2, -2.43 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluCylinder(qobj, .1, .1, .075, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -426,7 +447,7 @@ void drawCar(float R, float G, float B)
     //Background graphic
     glBindTexture(GL_TEXTURE_2D, texture[9]);
     glPushMatrix();
-    glTranslated(-8.4, 4.2, -2.4);
+    glTranslated(-8.4, 4.2, -2.4 + eyeZ);
     glEnable(GL_TEXTURE_2D);
     gluDisk(qobj, 0.0, .1, 25, 25);
     glDisable(GL_TEXTURE_2D);
@@ -435,20 +456,20 @@ void drawCar(float R, float G, float B)
     // Wheel
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blueMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8, 4.1, -1.5);
+    glTranslated(-8, 4.1, -1.5 + eyeZ);
     glutSolidTorus(.05, .3, 50, 50);
     glPopMatrix();
     // Center support
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8, 4.27, -1.5);
+    glTranslated(-8, 4.27, -1.5 + eyeZ);
     glScaled(.075, .3, .075);
     glutSolidCube(1);
     glPopMatrix();
     // Left support
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8.1, 4.05, -1.5 );
+    glTranslated(-8.1, 4.05, -1.5 + eyeZ);
     glRotated(120, 0, 0, 1);
     glScaled(.075, .3, .075);
     glutSolidCube(1);
@@ -456,7 +477,7 @@ void drawCar(float R, float G, float B)
     // Right support
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, concreteMatAmbandDif);
     glPushMatrix();
-    glTranslated(-7.9, 4.05, -1.5);
+    glTranslated(-7.9, 4.05, -1.5 + eyeZ);
     glRotated(-120, 0, 0, 1);
     glScaled(.075, .3, .075);
     glutSolidCube(1);
@@ -468,7 +489,7 @@ void drawCar(float R, float G, float B)
     glBindTexture(GL_TEXTURE_2D, texture[0]);
     glEnable(GL_TEXTURE_2D);
     glPushMatrix();
-    glTranslated(-8.64, 3.7, -.9);
+    glTranslated(-8.64, 3.7, -.9 + eyeZ);
     glRotated(90, 0, 1, 0);
     glScaled(1.5, .75, .05);
     glNormal3f(0.0, 0.0, 1.0);
@@ -480,7 +501,7 @@ void drawCar(float R, float G, float B)
     glEnd();
     glPopMatrix();
     glPushMatrix();
-    glTranslated(-8.74, 4.45, -2.4);
+    glTranslated(-8.74, 4.45, -2.4 + eyeZ);
     glRotated(90, 1, 0, 0);
     glScaled(.1, 1.75, 0);
     glNormal3f(0.0, 1.0, 0.0);
@@ -493,7 +514,7 @@ void drawCar(float R, float G, float B)
     glPopMatrix();
     //Right
     glPushMatrix();
-    glTranslated(-7.35, 3.7, -.9);
+    glTranslated(-7.35, 3.7, -.9 + eyeZ);
     glRotated(90, 0, 1, 0);
     glScaled(1.5, .75, .05);
     glNormal3f(0.0, 0.0, 1.0);
@@ -505,7 +526,7 @@ void drawCar(float R, float G, float B)
     glEnd();
     glPopMatrix();
     glPushMatrix();
-    glTranslated(-7.36, 4.45, -2.4);
+    glTranslated(-7.36, 4.45, -2.4 + eyeZ);
     glRotated(90, 1, 0, 0);
     glScaled(.1, 1.75, 0);
     glNormal3f(0.0, 1.0, 0.0);
@@ -521,7 +542,7 @@ void drawCar(float R, float G, float B)
     //Hood
     glBindTexture(GL_TEXTURE_2D, texture[3]);
     glPushMatrix();
-    glTranslated(-8.8, 4.45, -2.41);
+    glTranslated(-8.8, 4.45, -2.41 + eyeZ);
     glNormal3f(0.0, 1.0, 0.0);
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_POLYGON);
@@ -536,7 +557,7 @@ void drawCar(float R, float G, float B)
     //Floor
     glBindTexture(GL_TEXTURE_2D, texture[6]);
     glPushMatrix();
-    glTranslated(-10.2, .6, -4.0);
+    glTranslated(-10.2, .6, -4.0 + eyeZ);
     glScaled(4.5, 0.0, 4.0);
     glNormal3f(0.0, 1.0, 0.0);
     glEnable(GL_TEXTURE_2D);
@@ -553,13 +574,13 @@ void drawCar(float R, float G, float B)
     //Left
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offblackMatAmbandDif);
     glPushMatrix();
-    glTranslated(-8.5, 4.4, -8.8);
+    glTranslated(-8.5, 4.4, -8.8 + eyeZ);
     glRotated(90, 0, 1, 0);
     glutSolidTorus(.1, .3, 50, 50);
     glPopMatrix();
     //Right
     glPushMatrix();
-    glTranslated(-7.6, 4.4, -8.8);
+    glTranslated(-7.6, 4.4, -8.8 + eyeZ);
     glRotated(90, 0, 1, 0);
     glutSolidTorus(.1, .3, 50, 50);
     glPopMatrix();
@@ -641,6 +662,35 @@ void drawTrackLights()
     }
     
 }
+void drawSky()
+{
+    if (isDay) 
+    {
+        glBindTexture(GL_TEXTURE_2D, texture[11]);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, texture[12]);
+    }
+    
+
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glEnable(GL_TEXTURE_2D);
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
+    glPushMatrix();
+    glTranslated(0, 0, eyeZ);
+    glutSolidSphere(130, 30, 30);
+    glPopMatrix();
+
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glDisable(GL_TEXTURE_2D);
+
+}
 
 //Enables text, required in drawLightTree
 void writeStrokeString(void* font, char* string)
@@ -684,7 +734,14 @@ void drawLightTree()
     writeStrokeString(GLUT_STROKE_ROMAN, prestageText);
     glPopMatrix();
     //Pre-Stage Bulbs Right
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    if (RightTreeOn) 
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(.6, 11.8, -6.3);
     glutSolidSphere(.2, 50, 50);
@@ -694,7 +751,14 @@ void drawLightTree()
     glutSolidSphere(.2, 50, 50);
     glPopMatrix();
     //Pre-Stage Bulbs Left
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    if (LeftTreeOn) 
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(-.6, 11.8, -6.3);
     glutSolidSphere(.2, 50, 50);
@@ -718,7 +782,14 @@ void drawLightTree()
     writeStrokeString(GLUT_STROKE_ROMAN, stageText);
     glPopMatrix();
     //Stage Bulbs Right
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    if (RightTreeOn) 
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(.6, 10.5, -6.3);
     glutSolidSphere(.2, 50, 50);
@@ -728,7 +799,14 @@ void drawLightTree()
     glutSolidSphere(.2, 50, 50);
     glPopMatrix();
     //Stage Bulbs Left
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    if (LeftTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, forangeMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(-.6, 10.5, -6.3);
     glutSolidSphere(.2, 50, 50);
@@ -747,7 +825,14 @@ void drawLightTree()
     glutSolidCube(1);
     glPopMatrix();
     //Right Bulbs
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    if (RightTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellowMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(.9, 8.8, -6.9);
     glutSolidSphere(.4, 50, 50);
@@ -760,12 +845,26 @@ void drawLightTree()
     glTranslated(.9, 6.6, -6.9);
     glutSolidSphere(.4, 50, 50);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    if (RightTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(.9, 5.5, -6.9);
     glutSolidSphere(.4, 50, 50);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offwhiteMatAmbandDif);
+    if (RightTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(.9, 4.4, -6.9);
     glutSolidSphere(.4, 50, 50);
@@ -780,7 +879,14 @@ void drawLightTree()
     glutSolidCube(1);
     glPopMatrix();
     //Left Bulbs
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellowMatAmbandDif);
+    if (LeftTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, yellowMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(-1, 8.8, -6.5);
     glutSolidSphere(.4, 50, 50);
@@ -793,12 +899,26 @@ void drawLightTree()
     glTranslated(-1, 6.6, -6.5);
     glutSolidSphere(.4, 50, 50);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
+    if (LeftTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, greenMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(-1, 5.5, -6.5);
     glutSolidSphere(.4, 50, 50);
     glPopMatrix();
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    if (LeftTreeOn)
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, redMatAmbandDif);
+    }
+    else
+    {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glassMatAmbandDif);
+    }
     glPushMatrix();
     glTranslated(-1, 4.4, -6.5);
     glutSolidSphere(.4, 50, 50);
@@ -821,7 +941,7 @@ void animateSpeedometer(int value)
 {
     if (speedRot > -230)
     {
-        speedRot -= .5;
+        speedRot -= 5;
         speedX += .000025;
         speedY += .00001;
     }
@@ -831,7 +951,7 @@ void animateTachometer(int value)
 {
     if (tachRot > -190)
     {
-        tachRot -= 1;
+        tachRot -= 10;
         tachX += .000025;
         tachY += .000025;
     }  
@@ -841,7 +961,7 @@ void animateTachometerIdle(int value)
 {
     if (tachRot > -10)
     {
-        tachRot -= .25;
+        tachRot -= 2.5;
         tachX += .000025;
         tachY += .000025;
     }
@@ -851,7 +971,7 @@ void animateSpeedometerDec(int value)
 {
     if (speedRot < 0)
     {
-        speedRot += .5;
+        speedRot += 5;
         speedX -= .000025;
         speedY -= .00001;
     }
@@ -861,7 +981,7 @@ void animateTachometerDec(int value)
 {
     if (tachRot < 0)
     {
-        tachRot += 1;
+        tachRot += 10;
         tachX -= .000025;
         tachY -= .00005;
     }
@@ -871,7 +991,7 @@ void animateTachometerIdleDec(int value)
 {
     if (tachRot < -10)
     {
-        tachRot += 1;
+        tachRot += 10;
         tachX -= .000025;
         tachY -= .000025;
     }
@@ -882,7 +1002,7 @@ void animate()
 {
     if (carLaunch)
     {
-        /*glutTimerFunc(.05, animateCarLaunch, 1);*/
+        glutTimerFunc(.05, animateCarLaunch, 1);
         glutTimerFunc(.02, animateSpeedometer, 1);
         glutTimerFunc(.02, animateTachometer, 1);
     }
@@ -899,6 +1019,11 @@ void animate()
     else
     {
         glutTimerFunc(.02, animateTachometerDec, 1);
+    }
+
+    if (eyeZ == -950)
+    {
+        carLaunch = false;
     }
 
     glutPostRedisplay();
@@ -932,19 +1057,101 @@ void getID(int x, int y) {
 void setupLighting(void)
 {
     //Properties for track lights
-    float lightAmbLight0[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
-    float lightDifAndSpecLight0[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
-    static float spotAngle = 20.0;
+    float lightAmbLight[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
+    float lightDifAndSpecLight[] = { 255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1.0 };
+    static float spotAngle = 50.0;
     static float spotExponent = 2.0;
-    //Define properties for light0 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight0);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight0);
+    //Define properties for each light0 
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpecLight);
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spotAngle);
     glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spotExponent);
-    glEnable(GL_LIGHT0);
-  
-   
+    //Enable light0
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT0);
+    }
+    else
+    {
+        glDisable(GL_LIGHT0);
+    }
+    //Define properties for each light1 
+    glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lightDifAndSpecLight);
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spotExponent);
+    //Enable light1
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT1);
+    }
+    else
+    {
+        glDisable(GL_LIGHT1);
+    }
+    //Define properties for each light2
+    glLightfv(GL_LIGHT2, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, lightDifAndSpecLight);
+    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, spotExponent);
+    //Enable light2
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT2);
+    }
+    else
+    {
+        glDisable(GL_LIGHT2);
+    }
+    //Define properties for each light3 
+    glLightfv(GL_LIGHT3, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT3, GL_SPECULAR, lightDifAndSpecLight);
+    glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, spotExponent);
+    //Enable light3
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT3);
+    }
+    else
+    {
+        glDisable(GL_LIGHT3);
+    }
+    //Define properties for each light4 
+    glLightfv(GL_LIGHT4, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT4, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT4, GL_SPECULAR, lightDifAndSpecLight);
+    glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, spotExponent);
+    //Enable light4
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT4);
+    }
+    else
+    {
+        glDisable(GL_LIGHT4);
+    }
+    //Define properties for each light5
+    glLightfv(GL_LIGHT5, GL_AMBIENT, lightAmbLight);
+    glLightfv(GL_LIGHT5, GL_DIFFUSE, lightDifAndSpecLight);
+    glLightfv(GL_LIGHT5, GL_SPECULAR, lightDifAndSpecLight);
+    glLightf(GL_LIGHT5, GL_SPOT_CUTOFF, spotAngle);
+    glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, spotExponent);
+    //Enable light5
+    if (TLOn)
+    {
+        glEnable(GL_LIGHT5);
+    }
+    else
+    {
+        glDisable(GL_LIGHT5);
+    }
+    
 }
 
 //Menu
@@ -960,19 +1167,34 @@ void timeMenu(int value)
         isDay = true;
     }
     if (value == 2) {
-        gAmb = .3;
+        gAmb = .5;
         isDay = false;
     }
     glutPostRedisplay();
 }
-// Controller for moon menu (small/medium/large moon size)
-void lightsMenu(int value)
+void trackLightsMenu(int value)
 {
     if (value == 1) {
         TLOn = true;
     }
     if (value == 2) {
         TLOn = false;
+    }
+    glutPostRedisplay();
+}
+void lightTreeMenu(int value)
+{
+    if (value == 1) {
+        LeftTreeOn = true;
+    }
+    if (value == 2) {
+        LeftTreeOn = false;
+    }
+    if (value == 3) {
+        RightTreeOn = true;
+    }
+    if (value == 4) {
+        RightTreeOn = false;
     }
     glutPostRedisplay();
 }
@@ -984,14 +1206,22 @@ void drawPopupMenu(void)
     glutAddMenuEntry("Day", 1);
     glutAddMenuEntry("Night", 2);
 
-    int lightsSubMenu;
-    lightsSubMenu = glutCreateMenu(lightsMenu);
+    int trackLightsSubMenu;
+    trackLightsSubMenu = glutCreateMenu(trackLightsMenu);
     glutAddMenuEntry("On", 1);
     glutAddMenuEntry("Off", 2);
 
+    int lightTreeSubMenu;
+    lightTreeSubMenu = glutCreateMenu(lightTreeMenu);
+    glutAddMenuEntry("Left On", 1);
+    glutAddMenuEntry("Left Off", 2);
+    glutAddMenuEntry("Right On", 3);
+    glutAddMenuEntry("Right Off", 4);
+
     glutCreateMenu(frontMenu);
     glutAddSubMenu("Time", timeSubMenu);
-    glutAddSubMenu("Track Lights", lightsSubMenu);
+    glutAddSubMenu("Track Lights", trackLightsSubMenu);
+    glutAddSubMenu("Light Tree", lightTreeSubMenu);
    
     // The menu is triggered by the right mouse button.
     glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -1056,6 +1286,8 @@ void loadTextures()
     image[8] = getBMPData("Textures/tachometer.bmp");
     image[9] = getBMPData("Textures/fuel.bmp");
     image[10] = getBMPData("Textures/concrete.bmp");
+    image[11] = getBMPData("Textures/sky.bmp");
+    image[12] = getBMPData("Textures/nightsky.bmp");
 
     //Carbon-fiber index[0].
     glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -1155,9 +1387,28 @@ void loadTextures()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[10]->sizeX, image[10]->sizeY, 0,
         GL_RGB, GL_UNSIGNED_BYTE, image[10]->data);
+
+    //Sky index[11]
+    glBindTexture(GL_TEXTURE_2D, texture[11]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[11]->sizeX, image[11]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[11]->data);
+
+    //Night sky index[12]
+    glBindTexture(GL_TEXTURE_2D, texture[12]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image[12]->sizeX, image[12]->sizeY, 0,
+        GL_RGB, GL_UNSIGNED_BYTE, image[12]->data);
+
 }
 
-//Draws the objects in the scene
+//Draws the objects in the scene and controls object selection
 void drawObjects(void)
 {
     //Draw everything with unique colors but don't display, if user isSelecting
@@ -1180,6 +1431,7 @@ void drawObjects(void)
         drawGrass();
         drawLightTree();
         drawCar(1.0, 0.0, 0.0);
+        drawSky();
         glutSwapBuffers();
     }
 
@@ -1189,6 +1441,7 @@ void drawObjects(void)
         if (!carStart)
         {
             carStart = true;
+            LeftTreeOn = true;
             itemID = 0;
             cout << "   Engine started!" << endl;
         }
@@ -1222,21 +1475,34 @@ void drawScene(void)
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globAmb); //Global ambient
 
-    //Spotlight direction for track lights
-    /*glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, spotDirection);
-    glLightfv(GL_LIGHT7, GL_SPOT_DIRECTION, spotDirection);*/
     setupLighting();
     
-    //Set position of individual lights
-    float lightPosLight0[] = { -10.5, 5, -15, 1.0 };
+    //Set position for all track lights
     float spotDirection[] = { 0.0, -1.0, 0.0 };
+
+    float lightPosLight0[] = { -10.5, 27, -15, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosLight0);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spotDirection);
+
+    float lightPosLight1[] = { -10.5, 27, -215, 1.0 };
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPosLight1);
+    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
+
+    float lightPosLight2[] = { -10.5, 27, -415, 1.0 };
+    glLightfv(GL_LIGHT2, GL_POSITION, lightPosLight2);
+    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotDirection);
+
+    float lightPosLight3[] = { -10.5, 27, -615, 1.0 };
+    glLightfv(GL_LIGHT3, GL_POSITION, lightPosLight3);
+    glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDirection);
+
+    float lightPosLight4[] = { -10.5, 27, -815, 1.0 };
+    glLightfv(GL_LIGHT4, GL_POSITION, lightPosLight4);
+    glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, spotDirection);
+
+    float lightPosLight5[] = { -10.5, 27, -915, 1.0 };
+    glLightfv(GL_LIGHT5, GL_POSITION, lightPosLight4);
+    glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, spotDirection);
     
     //Set specular and shininess for all items
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpec);
@@ -1370,14 +1636,11 @@ void mouseInput(int button, int state, int x, int y)
 void printInteraction(void)
 {
     cout << "   Interaction:" << endl;
-    cout << "       Use arrow keys to move around" << endl;
-    cout << "       Press d or click the doors to open" << endl;
-    cout << "       Press L to turn on the hall light" << endl;
-    cout << "       Click > to increase and < to decrease global ambient light" << endl;
-    cout << "       Walk near the flashlight to pick it up" << endl;
-    cout << "       Press f to turn the flashlight on or off" << endl;
-    cout << "       Press w or click the wand to start guessing game" << endl;
-    cout << "       Pres G, H, R, or S to select a house guess" << endl;
+    cout << "       Press the arrow keys to move around the scene" << endl;
+    cout << "       Left click the red button to start the car" << endl;
+    cout << "       Click w to launch the acr down the track" << endl;
+    cout << "       Click r to reset the scene" << endl;
+    cout << "       Right click to access the menu" << endl;
     cout << "       Pres Esc to exit" << endl;
 }
 
@@ -1386,7 +1649,7 @@ int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(1500, 1000);
+    glutInitWindowSize(800, 600);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Drag Racer");
     setup();
