@@ -10,7 +10,8 @@
 // 
 // Date submitted: 
 // 
-// References: 
+// References:
+//      All references are just for texture images, no code sources were used.
 //      carbfib2.bmp, https://www.istockphoto.com/vector/carbon-fiber-seamless-gm94297564-5777029
 //      asphalt.bmp, https://besthqwallpapers.com/textures/4k-black-asphalt-background-black-stones-grunge-backgrounds-black-asphalt-157883
 //      metal.bmp, https://www.istockphoto.com/photo/abstract-background-reflection-rough-chrome-metal-texture-gm1130707008-299132827
@@ -298,24 +299,6 @@ void drawBarriers()
     glEnd();
     glPopMatrix();
     glEnable(GL_TEXTURE_2D);
-}
-void drawStands()
-{
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, whiteMatAmbandDif);
-    //Left
-    glPushMatrix();
-    glTranslated(-90, 5, -110);
-    glRotated(145, 0, 0, 1);
-    glScaled(50, .75, 70);
-    glutSolidCube(1);
-    glPopMatrix();
-    //Right
-    glPushMatrix();
-    glTranslated(90, 5, -110);
-    glRotated(35, 0, 0, 1);
-    glScaled(50, .75, 70);
-    glutSolidCube(1);
-    glPopMatrix();
 }
 void drawCar(float R, float G, float B)
 {
@@ -1521,9 +1504,6 @@ void setup(void)
     //Set world background color
     glClearColor(146.0 / 255.0, 154.0 / 255.0, 167.0 / 255.0, -500.0);
 
-    //Seed random number generator with time
-    srand(time(0));
-
     glEnable(GL_NORMALIZE);
 
     //Enable quadrics
@@ -1572,6 +1552,11 @@ void keyInput(unsigned char key, int x, int y)
     {
     case 'r':
         carLaunch = false;
+        carStart = false;
+        isDay = true;
+        TLOn = false;
+        LeftTreeOn = false;
+        RightTreeOn = false;
         eyeZ = 0;
         glutPostRedisplay();
         break;
