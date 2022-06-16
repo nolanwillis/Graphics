@@ -15,31 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="square.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="circleandmore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cylinder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="simplePerson.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="spaceGUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="SpaceGUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PaintBallonHeli.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="magic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="litTriangle.cpp">
+    <ClCompile Include="MagicCastle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DragRacer.cpp">

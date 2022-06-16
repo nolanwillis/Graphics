@@ -19,16 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="circleandmore.cpp" />
-    <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="DragRacer.cpp" />
-    <ClCompile Include="litTriangle.cpp" />
-    <ClCompile Include="magic.cpp" />
+    <ClCompile Include="MagicCastle.cpp" />
     <ClCompile Include="PaintBallonHeli.cpp" />
-    <ClCompile Include="simplePerson.cpp" />
-    <ClCompile Include="spaceGUI.cpp" />
-    <ClCompile Include="square.cpp" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="SpaceGUI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
